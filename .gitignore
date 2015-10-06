@@ -1,0 +1,13 @@
+.DS_Store
+npm-debug.log
+.dir-locals.el
+TAGS
+newrelic_agent.log
+
+# Exclude local.
+/local/
+/local_*
+
+/node_modules
+
+*.sh

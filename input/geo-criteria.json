@@ -1,0 +1,16 @@
+{
+  "INT": {
+    "excludedLocations": [{
+      "id": "2840",
+      "type": "COUNTRY",
+      "displayName": "United States"
+    }]
+  },
+  "USA": {
+    "targetedLocations": [{
+      "id": "2840",
+      "type": "COUNTRY",
+      "displayName": "United States"
+    }]
+  }
+}
