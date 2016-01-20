@@ -24,7 +24,7 @@ These are all the scripts we use at Curiosity Media to set up new line items whe
 
 ### Getting started
 
-Follow our [one-time setup](https://github.com/spanishdict/line-item-generator#one-time-setup).
+Follow our [one-time setup](https://github.com/spanishdict/example-line-item-generator#one-time-setup).
 
 The process for creating line items:
 

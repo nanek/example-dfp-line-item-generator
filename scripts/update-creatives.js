@@ -8,7 +8,7 @@
  *
  * Usage:
  *
- *   $ node update-creatives.js --channel A --platform M --position MIDDLE --region USA --partner SONOBI
+ *   $ node sripts/update-creatives.js --channel A --platform M --position MIDDLE --region USA --partner SONOBI
  *
  */
 'use strict';
@@ -18,8 +18,19 @@ var fs = require('fs');
 var path = require('path');
 var argv = require('minimist')(process.argv.slice(2));
 
-var Dfp = require('../lib/dfp');
-var dfp = new Dfp();
+var DFP_CREDS = require('../local/application-creds');
+var config = require('../local/config')
+var formatter = require('../lib/formatter');
+
+var Dfp = require('node-google-dfp-wrapper');
+
+var credentials = {
+  clientId: DFP_CREDS.installed.client_id,
+  clientSecret: DFP_CREDS.installed.client_secret,
+  redirectUrl: DFP_CREDS.installed.redirect_uris[0]
+}
+
+var dfp = new Dfp(credentials, config, config.refreshToken);
 
 var channel = argv.channel;
 var region = argv.region;
@@ -42,41 +53,45 @@ var all = [
   WILDCARD
 ].join('_');
 
-var snippetPath = './input/snippets/' + partner + '_SNIPPET.html';
+var query = {
+  name: all
+};
+
+var snippetPath = '../input/snippets/' + partner + '_SNIPPET.html';
 var relativePath = path.resolve(__dirname, snippetPath);
 var snippet = fs.readFileSync(relativePath, 'utf8');
 
 console.log(process.argv.slice(2).join(' '));
 
-Bluebird.resolve(dfp.getCreatives(all))
-  .map(function(creative) {
-    var price;
-    var bucket;
-    var prefix;
-    var amznslots;
-    var width;
-    var height;
+function getCreatives(query) {
+  return dfp.getCreatives(query);
+}
 
-    // In this case we are changing the snippet associated with a creative
-    price = creative.name.match(/\d*$/)[0];
-    price = price.replace(/^0/, '');
-    price = price[0] + '.' + price.slice(1);
+function editCreative(creative) {
+  creative.snippet = snippet.replace('some-text', 'edited-text');
+  // This property is a copy of snipppet and will be outdated
+  delete creative.expandedSnippet;
+  return creative;
+}
 
-    bucket = pricePoints[price];
-    prefix = platform === 'D' ? 'a' : 'm';
+function updateCreatives(creatives) {
+  return dfp.updateCreatives(creatives);
+}
 
-    width = size.split('x')[0][0];
-    height = size.split('x')[1][0];
+function logSuccess(results) {
+  if (results) {
+    console.log('sucessfully updated creatives');
+  }
+}
 
-    amznslots = prefix + width + 'x' + height + 'p' + bucket;
-    creative.snippet = snippet.replace('#AMAZON_KVP', amznslots);
+function handleError(err) {
+  console.log('updating creatives failed');
+  console.log('because', err.stack);
+}
 
-    delete creative.expandedSnippet;
-    return creative;
-  })
-  .then(function(newCreatives) {
-    return dfp.updateCreatives(newCreatives);
-  })
-  .catch(function(err) {
-    console.log('failed because', err.stack);
-  });
+Bluebird.resolve(query)
+  .then(getCreatives)
+  .map(editCreative)
+  .then(updateCreatives)
+  .then(logSuccess)
+  .catch(handleError);

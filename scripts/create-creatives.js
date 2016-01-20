@@ -6,7 +6,7 @@
  *
  * Usage:
  *
- *   $ node create-creatives.js --channel A --platform M --position MIDDLE --region USA --partner SONOBI
+ *   $ node scripts/create-creatives.js --channel A --platform M --position MIDDLE --region USA --partner SONOBI
  *
  */
 /*eslint-enble */
@@ -19,8 +19,19 @@ var ProgressBar = require('progress');
 var progressBar;
 var argv = require('minimist')(process.argv.slice(2));
 
-var Dfp = require('../lib/dfp');
-var dfp = new Dfp();
+var DFP_CREDS = require('../local/application-creds');
+var config = require('../local/config')
+var formatter = require('../lib/formatter');
+
+var Dfp = require('node-google-dfp-wrapper');
+
+var credentials = {
+  clientId: DFP_CREDS.installed.client_id,
+  clientSecret: DFP_CREDS.installed.client_secret,
+  redirectUrl: DFP_CREDS.installed.redirect_uris[0]
+}
+
+var dfp = new Dfp(credentials, config, config.refreshToken);
 
 var channel = argv.channel;
 var region = argv.region;
@@ -35,6 +46,10 @@ var size = sizes[position];
 var slots = require('../input/index-slot')(platform);
 
 var slot = slots[position];
+
+var CONCURRENCY = {
+  concurrency: 1
+};
 
 console.log(process.argv.slice(2).join(' '));
 
@@ -53,22 +68,21 @@ function getCPM(pricePoint) {
 function getCombinations() {
   var combinations = [];
 
-  _.forEach(pricePoints, function(bucket, pricePoint) {
+  var count = ['1', '2', '3', '4', '5'];
+  _.forEach(count, function(number) {
 
-    combinations.push({
-      cpm: getCPM(pricePoint),
-      bucket: bucket,
-      pricePoint: pricePoint,
+    var creative = formatter.formatCreative({
       size: size,
       partner: partner,
       platform: platform,
-      geoTargeting: region,
+      region: region,
       channel: channel,
       position: position,
-      replacements:{
-        "#INDEX_SLOT": slot
-      }
+      number: number,
     });
+
+    combinations.push(creative);
+
   });
 
   progressBar = new ProgressBar('Progress [:bar] :percent :elapseds', {
@@ -78,22 +92,31 @@ function getCombinations() {
   return combinations;
 }
 
-Bluebird.resolve(getCombinations())
-  .map(function(params) {
-    var creative = formatter.formatCreative(params);
-    progressBar.tick();
-    return creative;
-  })
-  .then(function(creatives) {
-    return dfp.createCreatives(creatives, partner.replace('-TEST', ''));
-  })
-  .then(function(results) {
-    if (results) {
+function prepareCreative(creative) {
+  return dfp.prepareCreative(creative)
+    .tap(function() {
       progressBar.tick();
-      console.log('sucessfully created creatives');
-    }
-  })
-  .catch(function(err) {
-    console.log('creating creative failed');
-    console.log('because', err.stack);
-  });
+    });
+}
+
+function createCreatives(creatives) {
+  return dfp.createCreatives(creatives);
+}
+
+function logSuccess(results) {
+  if (results) {
+    console.log('sucessfully created creatives');
+  }
+}
+
+function handleError(err) {
+  progressBar.tick()
+  console.log('creating creatives failed');
+  console.log('because', err.stack);
+}
+
+Bluebird.resolve(getCombinations())
+  .map(prepareCreative, CONCURRENCY)
+  .then(createCreatives)
+  .then(logSuccess)
+  .catch(handleError)

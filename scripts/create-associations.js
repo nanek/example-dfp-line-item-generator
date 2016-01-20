@@ -8,7 +8,7 @@
  *
  * Usage:
  *
- *   $ node create-associations.js --channel A --platform M --position MIDDLE --region USA --partner SONOBI
+ *   $ node scripts/create-associations.js --channel A --platform M --position MIDDLE --region USA --partner SONOBI
  *
  */
 /*eslint-enble */
@@ -18,8 +18,19 @@ var Bluebird = require('bluebird');
 var _ = require('lodash');
 var argv = require('minimist')(process.argv.slice(2));
 
-var Dfp = require('../lib/dfp');
-var dfp = new Dfp();
+var DFP_CREDS = require('../local/application-creds');
+var config = require('../local/config')
+var formatter = require('../lib/formatter');
+
+var Dfp = require('node-google-dfp-wrapper');
+
+var credentials = {
+  clientId: DFP_CREDS.installed.client_id,
+  clientSecret: DFP_CREDS.installed.client_secret,
+  redirectUrl: DFP_CREDS.installed.redirect_uris[0]
+}
+
+var dfp = new Dfp(credentials, config, config.refreshToken);
 
 var channel = argv.channel;
 var region = argv.region;
