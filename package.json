@@ -9,7 +9,7 @@
     "style": "npm run lint"
   },
   "author": "Juan Caiceo <juan@spanishdict.com>",
-  "license": "All Rights Reserved",
+  "license": "MIT",
   "dependencies": {
     "bluebird": "2.9.26",
     "debug": "2.2.0",
