@@ -5,7 +5,7 @@
  *
  * Usage:
  *
- *   $ node create-order.js --channel A --platform M --position MIDDLE --region USA --partner SONOBI
+ *   $ node scripts/create-order.js --channel A --platform M --position MIDDLE --region USA --partner SONOBI
  *
  */
 /*eslint-enble */
@@ -15,8 +15,19 @@ var Bluebird = require('bluebird');
 var formatter = require('../lib/formatter');
 var argv = require('minimist')(process.argv.slice(2));
 
-var Dfp = require('../lib/dfp');
-var dfp = new Dfp();
+var DFP_CREDS = require('../local/application-creds');
+var config = require('../local/config')
+var formatter = require('../lib/formatter');
+
+var Dfp = require('node-google-dfp-wrapper');
+
+var credentials = {
+  clientId: DFP_CREDS.installed.client_id,
+  clientSecret: DFP_CREDS.installed.client_secret,
+  redirectUrl: DFP_CREDS.installed.redirect_uris[0]
+}
+
+var dfp = new Dfp(credentials, config, config.refreshToken);
 
 var channel = argv.channel;
 var region = argv.region;
@@ -27,30 +38,51 @@ var platform = argv.platform;
 // This is the id of a DFP user that will be listed as trafficker.
 var traffickerId = '142204336';
 
+var name = [
+  partner,
+  channel,
+  platform,
+  position,
+  region
+].join('_').toUpperCase();
+
+var order = {
+  'name': name,
+  'unlimitedEndDateTime': true,
+  'status': 'DRAFT',
+  'currencyCode': 'USD',
+  'advertiserId': null,
+  'traffickerId': traffickerId,
+  'appliedLabels': null,
+  'isProgrammatic': false,
+  'partner': partner
+};
+
 // Print out arguments so we can know which script is executing
 console.log(process.argv.slice(2).join(' '));
 
-Bluebird.resolve({
-    channel: channel,
-    region: region,
-    position: position,
-    partner: partner,
-    platform: platform,
-    traffickerId: traffickerId
-  })
-  .then(function(params) {
-    var order = formatter.formatOrder(params);
-    return order;
-  })
-  .then(function(order) {
-    return dfp.createOrder(order, partner);
-  })
-  .then(function(results) {
-    if (results) {
-      console.log('sucessfully created order');
-    }
-  })
-  .catch(function(err) {
-    console.log('creating order failed');
-    console.log('because', err.stack);
-  });
+function prepareOrder(order) {
+  return dfp.prepareOrder(order);
+}
+
+function createOrder(order) {
+  return dfp.createOrder(order);
+}
+
+function logSuccess(results) {
+  if (results) {
+    console.log('sucessfully created order');
+  }
+}
+
+function handleError(err) {
+  console.log('creating order failed');
+  console.log('because', err.stack);
+}
+
+// MAIN
+Bluebird.resolve(order)
+  .then(prepareOrder)
+  .then(createOrder)
+  .then(logSuccess)
+  .catch(handleError);

@@ -6,7 +6,7 @@
  *
  * Usage:
  *
- *   $ node create-line-items.js --channel A --platform M --position MIDDLE --region USA --partner SONOBI
+ *   $ node scripts/create-line-items.js --channel A --platform M --position MIDDLE --region USA --partner SONOBI
  *
  */
 /*eslint-enble */
@@ -19,8 +19,19 @@ var ProgressBar = require('progress');
 var progressBar;
 var argv = require('minimist')(process.argv.slice(2));
 
-var Dfp = require('../lib/dfp');
-var dfp = new Dfp();
+var DFP_CREDS = require('../local/application-creds');
+var config = require('../local/config')
+var formatter = require('../lib/formatter');
+
+var Dfp = require('node-google-dfp-wrapper');
+
+var credentials = {
+  clientId: DFP_CREDS.installed.client_id,
+  clientSecret: DFP_CREDS.installed.client_secret,
+  redirectUrl: DFP_CREDS.installed.redirect_uris[0]
+}
+
+var dfp = new Dfp(credentials, config, config.refreshToken);
 
 var channel = argv.channel;
 var region = argv.region;
@@ -35,14 +46,11 @@ var slots = require('../input/index-slot')(platform);
 var size = sizes[position];
 var slot = slots[position];
 
-console.log(process.argv.slice(2).join(' '));
+var CONCURRENCY = {
+  concurrency: 1
+};
 
-function prepareLineItem(input) {
-  return dfp.prepareLineItem(input)
-    .tap(function() {
-      progressBar.tick();
-    });
-}
+console.log(process.argv.slice(2).join(' '));
 
 function getCPM(pricePoint) {
   var cpm = pricePoint;
@@ -71,19 +79,17 @@ function getCombinations() {
 
   _.forEach(pricePoints, function(bucket, pricePoint) {
     var cpm = getCPM(pricePoint);
-
     var lineItem = formatter.formatLineItem({
       cpm: cpm,
       channel: channel,
       position: position,
       platform: platform,
-      geoTargeting: region,
+      region: region,
       partner: partner,
       width: size.split('x')[0],
       height: size.split('x')[1],
-      customCriteriaKVPairs: {
-        sd_adtest: "sovrn"
-      }
+      customCriteriaKVPairs: {},
+      date: "1-22-2016, 18:10:53"
     });
 
     combinations.push(lineItem);
@@ -96,14 +102,31 @@ function getCombinations() {
   return combinations;
 }
 
+function prepareLineItem(lineItem) {
+  return dfp.prepareLineItem(lineItem)
+    .tap(function() {
+      progressBar.tick();
+    });
+}
+
+function createLineItems(lineItems) {
+  return dfp.createLineItems(lineItems);
+}
+
+function logSuccess(results) {
+  if (results) {
+    console.log('sucessfully created lineItems');
+  }
+}
+
+function handleError(err) {
+  progressBar.tick()
+  console.log('creating line items failed');
+  console.log('because', err.stack);
+}
+
 Bluebird.resolve(getCombinations())
-  .map(prepareLineItem, {
-    concurrency: 1
-  })
-  .then(function(lineItems) {
-    return dfp.createLineItems(lineItems);
-  })
-  .then(function(lineItems) {
-    progressBar.tick();
-    console.log('end create-line-items.js!');
-  });
+  .map(prepareLineItem, CONCURRENCY)
+  .then(createLineItems)
+  .then(logSuccess)
+  .catch(handleError);
