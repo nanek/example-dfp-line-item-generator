@@ -11,3 +11,4 @@ newrelic_agent.log
 /node_modules
 
 *.sh
+!create-all-line-items.sh
