@@ -19,7 +19,7 @@ var _ = require('lodash');
 var argv = require('minimist')(process.argv.slice(2));
 
 var DFP_CREDS = require('../local/application-creds');
-var config = require('../local/config')
+var config = require('../local/config');
 var formatter = require('../lib/formatter');
 
 var Dfp = require('node-google-dfp-wrapper');
@@ -28,7 +28,14 @@ var credentials = {
   clientId: DFP_CREDS.installed.client_id,
   clientSecret: DFP_CREDS.installed.client_secret,
   redirectUrl: DFP_CREDS.installed.redirect_uris[0]
-}
+};
+
+var ProgressBar = require('progress');
+var progressBar;
+
+var CONCURRENCY = {
+  concurrency: 1
+};
 
 var dfp = new Dfp(credentials, config, config.refreshToken);
 
@@ -37,6 +44,7 @@ var region = argv.region;
 var position = argv.position;
 var partner = argv.partner;
 var platform = argv.platform;
+var offset = argv.offset;
 
 var sizes = require('./sizes')(platform);
 var size = sizes[position];
@@ -45,48 +53,92 @@ var WILDCARD = '%';
 
 var all = [
   channel,
-  platform + size + position,
   region,
   partner,
   WILDCARD
 ].join('_').toUpperCase();
 
+var query = {
+  name: all
+};
+
+var creatives = [
+  '92877739936',
+  '95043909256',
+  '95043981976',
+  '95044399336',
+  '95044464736',
+  '95044558336',
+  '95044595056'
+];
+
+var sizes =  [
+  { width: 300, height: 250, isAspectRatio: false },
+  { width: 728, height: 90, isAspectRatio: false },
+  { width: 160, height: 600, isAspectRatio: false },
+  { width: 320, height: 50, isAspectRatio: false }
+];
+
 console.log(process.argv.slice(2).join(' '));
 
-Bluebird.resolve(dfp.getLineItems(all))
-  .then(function(lineItems) {
-    console.log('got all line items');
-    return [lineItems, dfp.getCreatives(all)];
-  })
-  .spread(function(lineItems, creatives) {
-    var associations = {};
-    console.log('got all creatives');
+function getLineItems(query){
+  return dfp.getLineItems(query);
+}
 
-    lineItems.forEach(function(lineItem) {
-      associations[lineItem.name] = {
-        lineItemId: lineItem.id
+function notFiveCent(lineItem){
+  return !lineItem.name.match(/[05]$/);
+}
+
+function prepareAssociations(lineItems) {
+  var associations  = lineItems.map(function(lineItem) {
+    return creatives.map(function(creativeId){
+      return {
+        lineItemId: lineItem.id,
+        creativeId: creativeId
       };
     });
-
-    creatives.forEach(function(creative) {
-      if (associations[creative.name]) {
-        associations[creative.name].creativeId = creative.id;
-      }
-    });
-
-    return associations;
-  })
-  .then(function(associations) {
-    var ids = _.map(associations, function(associationIds, names) {
-      return associationIds;
-    });
-    ids = _.compact(ids);
-    return dfp.createAssociations(ids);
-  })
-  .then(function(associations) {
-    console.log('created associations');
-  })
-  .catch(function(err) {
-    console.log('creating all associations failed');
-    console.log('because', err.stack);
   });
+
+  return associations;
+}
+
+function log(x){
+  return console.log(x.length);
+}
+
+function splitBatches(associations){
+  var batches = _.chunk(associations, 1600);
+  progressBar = new ProgressBar('Progress [:bar] :percent :elapseds', {
+    total: batches.length
+  });
+  return batches;
+}
+
+function advanceProgress(){
+  progressBar.tick();
+};
+function createAssociations(associations) {
+  return dfp.createAssociations(associations)
+    .tap(advanceProgress);
+}
+
+function logSuccess(results) {
+  if (results) {
+    console.log('sucessfully created associations');
+  }
+}
+
+function handleError(err) {
+  console.log('creating associations failed');
+  console.log('because', err.stack);
+}
+
+Bluebird.resolve(query)
+  .then(getLineItems)
+  .filter(notFiveCent)
+  .then(prepareAssociations)
+  .then(_.flatten)
+  .then(splitBatches)
+  .map(createAssociations, CONCURRENCY)
+  .then(logSuccess)
+  .catch(handleError);

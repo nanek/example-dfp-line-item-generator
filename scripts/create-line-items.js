@@ -20,7 +20,7 @@ var progressBar;
 var argv = require('minimist')(process.argv.slice(2));
 
 var DFP_CREDS = require('../local/application-creds');
-var config = require('../local/config')
+var config = require('../local/config');
 var formatter = require('../lib/formatter');
 
 var Dfp = require('node-google-dfp-wrapper');
@@ -29,7 +29,7 @@ var credentials = {
   clientId: DFP_CREDS.installed.client_id,
   clientSecret: DFP_CREDS.installed.client_secret,
   redirectUrl: DFP_CREDS.installed.redirect_uris[0]
-}
+};
 
 var dfp = new Dfp(credentials, config, config.refreshToken);
 
@@ -38,6 +38,7 @@ var region = argv.region;
 var position = argv.position;
 var partner = argv.partner;
 var platform = argv.platform;
+var offset = argv.offset;
 
 var pricePoints = require('./price-points');
 var sizes = require('./sizes')(platform);
@@ -45,6 +46,13 @@ var slots = require('../input/index-slot')(platform);
 
 var size = sizes[position];
 var slot = slots[position];
+
+var orderName = [
+  partner,
+  channel,
+  region,
+  offset + '-CENT'
+].join('_');
 
 var CONCURRENCY = {
   concurrency: 1
@@ -64,32 +72,30 @@ function getCPM(pricePoint) {
   return cpm;
 }
 
-function indexCriteria(slot, cpm) {
-  var criteria = '';
-
-  criteria += slot;
-  criteria += '_';
-  criteria += cpm.replace('.', '').replace(/^0/, '');
-
-  return criteria;
-}
-
 function getCombinations() {
   var combinations = [];
 
+  console.log(orderName)
+
+  offset = Number(offset)/100;
   _.forEach(pricePoints, function(bucket, pricePoint) {
-    var cpm = getCPM(pricePoint);
+    var price = Number(pricePoint) + offset;
+    var cpm = getCPM(price).toFixed(2);
     var lineItem = formatter.formatLineItem({
+      offset: offset,
       cpm: cpm,
       channel: channel,
       position: position,
       platform: platform,
+      orderName: orderName,
       region: region,
       partner: partner,
       width: size.split('x')[0],
       height: size.split('x')[1],
-      customCriteriaKVPairs: {},
-      date: "1-22-2016, 18:10:53"
+      customCriteriaKVPairs: {
+        "hb_pb": (cpm.toString())
+      },
+      date: "2-04-2016, 16:10:53"
     });
 
     combinations.push(lineItem);
@@ -120,7 +126,7 @@ function logSuccess(results) {
 }
 
 function handleError(err) {
-  progressBar.tick()
+  progressBar.tick();
   console.log('creating line items failed');
   console.log('because', err.stack);
 }

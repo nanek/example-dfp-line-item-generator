@@ -16,7 +16,7 @@ var formatter = require('../lib/formatter');
 var argv = require('minimist')(process.argv.slice(2));
 
 var DFP_CREDS = require('../local/application-creds');
-var config = require('../local/config')
+var config = require('../local/config');
 var formatter = require('../lib/formatter');
 
 var Dfp = require('node-google-dfp-wrapper');
@@ -25,7 +25,7 @@ var credentials = {
   clientId: DFP_CREDS.installed.client_id,
   clientSecret: DFP_CREDS.installed.client_secret,
   redirectUrl: DFP_CREDS.installed.redirect_uris[0]
-}
+};
 
 var dfp = new Dfp(credentials, config, config.refreshToken);
 
@@ -34,6 +34,7 @@ var region = argv.region;
 var position = argv.position;
 var partner = argv.partner.replace('-Test', '');
 var platform = argv.platform;
+var offset = argv.offset;
 
 // This is the id of a DFP user that will be listed as trafficker.
 var traffickerId = '142204336';
@@ -41,9 +42,8 @@ var traffickerId = '142204336';
 var name = [
   partner,
   channel,
-  platform,
-  position,
-  region
+  region,
+  offset + '-CENT'
 ].join('_').toUpperCase();
 
 var order = {
