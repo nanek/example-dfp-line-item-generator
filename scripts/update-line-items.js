@@ -14,9 +14,10 @@
 
 var Bluebird = require('bluebird');
 var argv = require('minimist')(process.argv.slice(2));
+var _ = require('lodash');
 
 var DFP_CREDS = require('../local/application-creds');
-var config = require('../local/config')
+var config = require('../local/config');
 var formatter = require('../lib/formatter');
 
 var Dfp = require('node-google-dfp-wrapper');
@@ -25,35 +26,47 @@ var credentials = {
   clientId: DFP_CREDS.installed.client_id,
   clientSecret: DFP_CREDS.installed.client_secret,
   redirectUrl: DFP_CREDS.installed.redirect_uris[0]
-}
+};
 
 var dfp = new Dfp(credentials, config, config.refreshToken);
 
+// read command line arguments
 var channel = argv.channel;
 var region = argv.region;
 var position = argv.position;
 var partner = argv.partner;
 var platform = argv.platform;
 
+// use arguments to determine any other variables
 var sizes = require('./sizes')(platform);
-
 var size = sizes[position];
 
 var WILDCARD = '%';
 
-var all = [
-  channel,
-  platform + size + position,
-  region,
-  partner,
-  WILDCARD
-].join('_');
+var ProgressBar = require('progress');
+var progressBar;
 
-var query = {
-  name: all
+var CONCURRENCY = {
+  concurrency: 1
 };
 
 console.log(process.argv.slice(2).join(' '));
+
+function prepareQuery(){
+  var allLineItems = [
+    channel,
+    platform + size + position,
+    region,
+    partner,
+    WILDCARD
+  ].join('_');
+
+  var query = {
+    name: all
+  };
+
+  return query;
+}
 
 function getLineItems(query) {
   return dfp.getLineItems(query);
@@ -61,15 +74,18 @@ function getLineItems(query) {
 
 function editLineItem(lineItem) {
   lineItem.startDateTime.hour = '14';
+  // Some fields need to receive default values
+  lineItem.targeting.technologyTargeting = [];
   return lineItem;
 }
 
-function isNotArchived(lineItem) {
+function includeLineItem(lineItem) {
   return !lineItem.isArchived;
 }
 
 function updateLineItems(lineItems) {
-  return dfp.updateLineItems(lineItems);
+  return dfp.updateLineItems(lineItems)
+    .tap(advanceProgress);
 }
 
 function logSuccess(results) {
@@ -83,11 +99,28 @@ function handleError(err) {
   console.log('because', err.stack);
 }
 
+function splitBatches(lineItems){
+  var batches = _.chunk(lineItems, 400);
+  progressBar = new ProgressBar('Progress [:bar] :percent :elapseds', {
+    total: batches.length + 1
+  });
+  return batches;
+}
 
-Bluebird.resolve(query)
+function advanceProgress(){
+  progressBar.tick();
+}
+
+// this function is to help debugging
+function log(x){
+  console.log(x);
+}
+
+Bluebird.resolve(prepareQuery())
   .then(getLineItems)
   .map(editLineItem)
-  .filter(isNotArchived)
-  .then(updateLineItems)
+  .filter(includeLineItem)
+  .then(splitBatches)
+  .map(updateLineItems, CONCURRENCY)
   .then(logSuccess)
   .catch(handleError);
