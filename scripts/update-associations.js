@@ -30,11 +30,8 @@ var credentials = {
 
 var dfp = new Dfp(credentials, config, config.refreshToken);
 
+// read command line arguments
 var creativeId = argv.creativeId;
-
-var query = {
-  creativeId: creativeId
-};
 
 var ProgressBar = require('progress');
 var progressBar;
@@ -61,6 +58,12 @@ var exampleAssociation = {
 };
 
 console.log(process.argv.slice(2).join(' '));
+
+function getQuery() {
+  return {
+    creativeId: creativeId
+  };
+};
 
 function getAssociations(query) {
   return dfp.getAssociations(query);
@@ -119,7 +122,7 @@ function advanceProgress(){
   progressBar.tick();
 };
 
-Bluebird.resolve(query)
+Bluebird.resolve(getQuery())
   .then(getAssociations)
   .filter(includeAssociation)
   .map(editAssociation)
