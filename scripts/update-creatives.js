@@ -60,7 +60,7 @@ var CONCURRENCY = {
 console.log(process.argv.slice(2).join(' '));
 
 function prepareQuery(){
-  var name = [
+  var allCreatives = [
     channel,
     platform + size + position,
     region,
@@ -69,7 +69,7 @@ function prepareQuery(){
   ].join('_');
 
   var query = {
-    name: name
+    name: allCreatives
   };
 
   return query;
