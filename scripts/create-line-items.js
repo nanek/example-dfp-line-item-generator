@@ -13,14 +13,13 @@
 'use strict';
 
 var Bluebird = require('bluebird');
-var formatter = require('../lib/formatter');
 var _ = require('lodash');
 var ProgressBar = require('progress');
 var progressBar;
 var argv = require('minimist')(process.argv.slice(2));
 
 var DFP_CREDS = require('../local/application-creds');
-var config = require('../local/config')
+var config = require('../local/config');
 var formatter = require('../lib/formatter');
 
 var Dfp = require('node-google-dfp-wrapper');
@@ -29,20 +28,21 @@ var credentials = {
   clientId: DFP_CREDS.installed.client_id,
   clientSecret: DFP_CREDS.installed.client_secret,
   redirectUrl: DFP_CREDS.installed.redirect_uris[0]
-}
+};
 
 var dfp = new Dfp(credentials, config, config.refreshToken);
 
+// read command line arguments
 var channel = argv.channel;
 var region = argv.region;
 var position = argv.position;
 var partner = argv.partner;
 var platform = argv.platform;
 
+// use arguments to determine any other variables
 var pricePoints = require('./price-points');
 var sizes = require('./sizes')(platform);
 var slots = require('../input/index-slot')(platform);
-
 var size = sizes[position];
 var slot = slots[position];
 
@@ -120,7 +120,7 @@ function logSuccess(results) {
 }
 
 function handleError(err) {
-  progressBar.tick()
+  progressBar.tick();
   console.log('creating line items failed');
   console.log('because', err.stack);
 }
