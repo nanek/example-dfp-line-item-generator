@@ -12,11 +12,10 @@
 'use strict';
 
 var Bluebird = require('bluebird');
-var formatter = require('../lib/formatter');
 var argv = require('minimist')(process.argv.slice(2));
 
 var DFP_CREDS = require('../local/application-creds');
-var config = require('../local/config')
+var config = require('../local/config');
 var formatter = require('../lib/formatter');
 
 var Dfp = require('node-google-dfp-wrapper');
@@ -25,7 +24,7 @@ var credentials = {
   clientId: DFP_CREDS.installed.client_id,
   clientSecret: DFP_CREDS.installed.client_secret,
   redirectUrl: DFP_CREDS.installed.redirect_uris[0]
-}
+};
 
 var dfp = new Dfp(credentials, config, config.refreshToken);
 
