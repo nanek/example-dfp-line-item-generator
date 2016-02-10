@@ -42,7 +42,7 @@ var CONCURRENCY = {
 
 // use a default object to force certain properties to be in the correct order
 // startDateTime throws an error if you use full values
-var exampleAssociation = {
+var defaultAssociation = {
   lineItemId: null,
   creativeId: null,
   startDateTime: {
@@ -80,7 +80,7 @@ function includeAssociation(association){
 }
 
 function editAssociation(association){
-  var clone = _.cloneDeep(exampleAssociation);
+  var clone = _.cloneDeep(defaultAssociation);
   association = _.assign(clone, association);
   association.sizes = [ { width: 300, height: 250, isAspectRatio: false },
                         { width: 160, height: 600, isAspectRatio: false },
