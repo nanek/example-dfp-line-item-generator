@@ -40,6 +40,8 @@ var CONCURRENCY = {
   concurrency: 1
 };
 
+// use a default object to force certain properties to be in the correct order
+// startDateTime throws an error if you use full values
 var exampleAssociation = {
   lineItemId: null,
   creativeId: null,
