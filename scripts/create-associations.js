@@ -21,6 +21,7 @@ var argv = require('minimist')(process.argv.slice(2));
 var DFP_CREDS = require('../local/application-creds');
 var config = require('../local/config');
 var formatter = require('../lib/formatter');
+var helpers = require('../lib/helpers');
 
 var Dfp = require('node-google-dfp-wrapper');
 
@@ -45,9 +46,17 @@ var size = sizes[position];
 
 var WILDCARD = '%';
 
-
 var ProgressBar = require('progress');
 var progressBar;
+
+// Get helper functions
+var item = 'associations';
+var initProgressBar = _.curry(helpers.initProgressBar)(progressBar);
+var advanceProgress = _.curry(helpers.advanceProgress)(progressBar);
+var handleError = _.curry(helpers.handleError)(item);
+var logSuccess = _.curry(helpers.logSuccess)(item, advanceProgress);
+var splitBatches = _.curry(helpers.splitBatches)(initProgressBar);
+var debugLogger = helpers.debugLogger;
 
 console.log(process.argv.slice(2).join(' '));
 
@@ -102,35 +111,6 @@ function prepareAssociations(ids) {
 function createAssociations(ids){
   return dfp.createAssociations(ids)
     .tap(advanceProgress);
-}
-
-function logSuccess(results) {
-  advanceProgress();
-  if (results){
-    console.log('created associations');
-  }
-}
-
-function handleError(err){
-  console.log('creating all associations failed');
-  console.log('because', err.stack);
-}
-
-function splitBatches(lineItems){
-  var batches = _.chunk(lineItems, 400);
-  progressBar = new ProgressBar('Progress [:bar] :percent :elapseds', {
-    total: batches.length + 1
-  });
-  return batches;
-}
-
-function advanceProgress(){
-  progressBar.tick();
-}
-
-// this function is to help debugging
-function log(x){
-  console.log(x);
 }
 
 Bluebird.resolve(prepareQuery())
