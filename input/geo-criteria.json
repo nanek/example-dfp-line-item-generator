@@ -12,5 +12,20 @@
       "type": "COUNTRY",
       "displayName": "United States"
     }]
+  },
+  "CA/UK/AU": {
+    "targetedLocations": [{
+      "id": "2036",
+      "type": "COUNTRY",
+      "displayName": "Australia"
+    }, {
+      "id": "2124",
+      "type": "COUNTRY",
+      "displayName": "Canada"
+    }, {
+      "id": "2826",
+      "type": "COUNTRY",
+      "displayName": "United Kingdom"
+    }]
   }
 }
