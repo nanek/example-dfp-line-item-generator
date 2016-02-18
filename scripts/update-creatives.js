@@ -14,14 +14,11 @@
 'use strict';
 
 var Bluebird = require('bluebird');
-var fs = require('fs');
-var path = require('path');
 var _ = require('lodash');
 var argv = require('minimist')(process.argv.slice(2));
 
 var DFP_CREDS = require('../local/application-creds');
 var config = require('../local/config');
-var formatter = require('../lib/formatter');
 
 var Dfp = require('node-google-dfp-wrapper');
 
@@ -41,12 +38,8 @@ var partner = argv.partner;
 var platform = argv.platform;
 
 // use arguments to determine any other variables
-var pricePoints = require('./price-points');
 var sizes = require('./sizes')(platform);
 var size = sizes[position];
-var snippetPath = '../input/snippets/' + partner + '_SNIPPET.html';
-var relativePath = path.resolve(__dirname, snippetPath);
-var snippet = fs.readFileSync(relativePath, 'utf8');
 
 var WILDCARD = '%';
 
@@ -80,13 +73,14 @@ function getCreatives(query) {
 }
 
 function editCreative(creative) {
-  creative.snippet = snippet.replace('some-text', 'edited-text');
   // This property is a copy of snippet and will be outdated
   delete creative.expandedSnippet;
+  // mutate creative however you need to
   return creative;
 }
 
 function includeCreative(creative) {
+  // filter creative however you need to
   return true;
 }
 
