@@ -11,6 +11,7 @@
  *   $ node sripts/update-creatives.js --channel A --platform M --position MIDDLE --region USA --partner SONOBI
  *
  */
+/*eslint-enable */
 'use strict';
 
 var Bluebird = require('bluebird');
@@ -52,7 +53,7 @@ var CONCURRENCY = {
 
 console.log(process.argv.slice(2).join(' '));
 
-function prepareQuery(){
+function prepareQuery() {
   var allCreatives = [
     channel,
     platform + size + position,
@@ -101,7 +102,7 @@ function handleError(err) {
   console.log('because', err.stack);
 }
 
-function splitBatches(lineItems){
+function splitBatches(lineItems) {
   var batches = _.chunk(lineItems, 400);
   progressBar = new ProgressBar('Progress [:bar] :percent :elapseds', {
     total: batches.length + 1
@@ -109,14 +110,16 @@ function splitBatches(lineItems){
   return batches;
 }
 
-function advanceProgress(){
+function advanceProgress() {
   progressBar.tick();
 }
 
 // this function is to help debugging
+/* eslint-disable */
 function log(x){
   console.log(x);
 }
+/*eslint-enable */
 
 Bluebird.resolve(prepareQuery())
   .then(getCreatives)

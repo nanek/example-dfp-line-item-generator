@@ -11,16 +11,17 @@
  *   $ node scripts/create-associations.js --channel A --platform M --position MIDDLE --region USA --partner SONOBI
  *
  */
-/*eslint-enble */
+/*eslint-enable */
 'use strict';
 
 var Bluebird = require('bluebird');
 var _ = require('lodash');
+var ProgressBar = require('progress');
+var progressBar;
 var argv = require('minimist')(process.argv.slice(2));
 
 var DFP_CREDS = require('../local/application-creds');
 var config = require('../local/config');
-var formatter = require('../lib/formatter');
 
 var Dfp = require('node-google-dfp-wrapper');
 
@@ -45,13 +46,13 @@ var size = sizes[position];
 
 var WILDCARD = '%';
 
-
-var ProgressBar = require('progress');
-var progressBar;
+var CONCURRENCY = {
+  concurrency: 1
+};
 
 console.log(process.argv.slice(2).join(' '));
 
-function prepareQuery(){
+function prepareQuery() {
   var allLineItems = [
     channel,
     platform + size + position,
@@ -63,7 +64,7 @@ function prepareQuery(){
   return allLineItems;
 }
 
-function getLineItems(query){
+function getLineItems(query) {
   return [dfp.getLineItems(query), query];
 }
 
@@ -99,24 +100,24 @@ function prepareAssociations(ids) {
   return associations;
 }
 
-function createAssociations(ids){
+function createAssociations(ids) {
   return dfp.createAssociations(ids)
     .tap(advanceProgress);
 }
 
 function logSuccess(results) {
   advanceProgress();
-  if (results){
+  if (results) {
     console.log('created associations');
   }
 }
 
-function handleError(err){
+function handleError(err) {
   console.log('creating all associations failed');
   console.log('because', err.stack);
 }
 
-function splitBatches(lineItems){
+function splitBatches(lineItems) {
   var batches = _.chunk(lineItems, 400);
   progressBar = new ProgressBar('Progress [:bar] :percent :elapseds', {
     total: batches.length + 1
@@ -124,14 +125,16 @@ function splitBatches(lineItems){
   return batches;
 }
 
-function advanceProgress(){
+function advanceProgress() {
   progressBar.tick();
 }
 
 // this function is to help debugging
+/* eslint-disable */
 function log(x){
   console.log(x);
 }
+/*eslint-enable */
 
 Bluebird.resolve(prepareQuery())
   .then(getLineItems)

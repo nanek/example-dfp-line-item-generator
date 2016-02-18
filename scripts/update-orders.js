@@ -10,9 +10,11 @@
  *   $ node scripts/update-orders.js --channel A --platform M --position MIDDLE --region USA --partner SONOBI
  *
  */
+/*eslint-enable */
 'use strict';
 
 var Bluebird = require('bluebird');
+var _ = require('lodash');
 var argv = require('minimist')(process.argv.slice(2));
 
 var DFP_CREDS = require('../local/application-creds');
@@ -50,7 +52,7 @@ var CONCURRENCY = {
 
 console.log(process.argv.slice(2).join(' '));
 
-function prepareQuery(){
+function prepareQuery() {
   var name = [
     channel,
     platform + size + position,
@@ -96,7 +98,7 @@ function handleError(err) {
   console.log('because', err.stack);
 }
 
-function splitBatches(lineItems){
+function splitBatches(lineItems) {
   var batches = _.chunk(lineItems, 400);
   progressBar = new ProgressBar('Progress [:bar] :percent :elapseds', {
     total: batches.length + 1
@@ -104,14 +106,16 @@ function splitBatches(lineItems){
   return batches;
 }
 
-function advanceProgress(){
+function advanceProgress() {
   progressBar.tick();
 }
 
 // this function is to help debugging
+/* eslint-disable */
 function log(x){
   console.log(x);
 }
+/*eslint-enable */
 
 Bluebird.resolve(prepareQuery())
   .then(getOrders)

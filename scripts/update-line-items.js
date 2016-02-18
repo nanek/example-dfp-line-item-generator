@@ -10,6 +10,7 @@
  *   $ node scripts/update-line-items.js --channel A --platform M --position MIDDLE --region USA --partner SONOBI
  *
  */
+/*eslint-enable */
 'use strict';
 
 var Bluebird = require('bluebird');
@@ -18,7 +19,6 @@ var _ = require('lodash');
 
 var DFP_CREDS = require('../local/application-creds');
 var config = require('../local/config');
-var formatter = require('../lib/formatter');
 
 var Dfp = require('node-google-dfp-wrapper');
 
@@ -52,7 +52,7 @@ var CONCURRENCY = {
 
 console.log(process.argv.slice(2).join(' '));
 
-function prepareQuery(){
+function prepareQuery() {
   var allLineItems = [
     channel,
     platform + size + position,
@@ -62,7 +62,7 @@ function prepareQuery(){
   ].join('_');
 
   var query = {
-    name: all
+    name: allLineItems
   };
 
   return query;
@@ -73,16 +73,16 @@ function getLineItems(query) {
 }
 
 function editLineItem(lineItem) {
-  lineItem.startDateTime.hour = '14';
   // Some fields need to receive default values
   lineItem.targeting.technologyTargeting = [];
+  // mutate line item however you need to
   return lineItem;
 }
 
 function includeLineItem(lineItem) {
-  return !lineItem.isArchived;
+  // filter line item however you need to
+  return true;
 }
-
 function updateLineItems(lineItems) {
   return dfp.updateLineItems(lineItems)
     .tap(advanceProgress);
@@ -99,7 +99,7 @@ function handleError(err) {
   console.log('because', err.stack);
 }
 
-function splitBatches(lineItems){
+function splitBatches(lineItems) {
   var batches = _.chunk(lineItems, 400);
   progressBar = new ProgressBar('Progress [:bar] :percent :elapseds', {
     total: batches.length + 1
@@ -107,14 +107,16 @@ function splitBatches(lineItems){
   return batches;
 }
 
-function advanceProgress(){
+function advanceProgress() {
   progressBar.tick();
 }
 
 // this function is to help debugging
+/* eslint-disable */
 function log(x){
   console.log(x);
 }
+/*eslint-enable */
 
 Bluebird.resolve(prepareQuery())
   .then(getLineItems)

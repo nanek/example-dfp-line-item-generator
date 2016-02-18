@@ -10,6 +10,7 @@
  *   $ node scripts/update-associations.js --channel A --platform M --position MIDDLE --region USA --partner SONOBI
  *
  */
+/*eslint-enable */
 'use strict';
 
 var Bluebird = require('bluebird');
@@ -64,7 +65,7 @@ function getQuery() {
   return {
     creativeId: creativeId
   };
-};
+}
 
 function getAssociations(query) {
   return dfp.getAssociations(query);
@@ -99,11 +100,13 @@ function handleError(err) {
 }
 
 // this function is to help debugging
+/* eslint-disable */
 function log(x){
   console.log(x);
 }
+/*eslint-enable */
 
-function splitBatches(associations){
+function splitBatches(associations) {
   var batches = _.chunk(associations, 400);
   console.log(batches.length, 'batches');
   progressBar = new ProgressBar('Progress [:bar] :percent :elapseds', {
@@ -113,9 +116,9 @@ function splitBatches(associations){
   return batches;
 }
 
-function advanceProgress(){
+function advanceProgress() {
   progressBar.tick();
-};
+}
 
 Bluebird.resolve(getQuery())
   .then(getAssociations)

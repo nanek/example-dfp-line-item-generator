@@ -9,7 +9,7 @@
  *   $ node scripts/create-creatives.js --channel A --platform M --position MIDDLE --region USA --partner SONOBI
  *
  */
-/*eslint-enble */
+/*eslint-enable */
 'use strict';
 
 var Bluebird = require('bluebird');
@@ -40,29 +40,14 @@ var partner = argv.partner;
 var platform = argv.platform;
 
 // use arguments to determine any other variables
-var pricePoints = require('./price-points');
 var sizes = require('./sizes')(platform);
 var size = sizes[position];
-var slots = require('../input/index-slot')(platform);
-var slot = slots[position];
 
 var CONCURRENCY = {
   concurrency: 1
 };
 
 console.log(process.argv.slice(2).join(' '));
-
-function getCPM(pricePoint) {
-  var cpm = pricePoint;
-
-  //add trailing 0 if needed
-  var index = pricePoint.length - 2;
-  if (cpm[index] === '.') {
-    cpm += '0';
-  }
-
-  return cpm;
-}
 
 function getCombinations() {
   var combinations = [];
@@ -93,9 +78,7 @@ function getCombinations() {
 
 function prepareCreative(creative) {
   return dfp.prepareCreative(creative)
-    .tap(function() {
-      progressBar.tick();
-    });
+    .tap(advanceProgress);
 }
 
 function createCreatives(creatives) {
@@ -104,14 +87,18 @@ function createCreatives(creatives) {
 
 function logSuccess(results) {
   if (results) {
+    advanceProgress();
     console.log('sucessfully created creatives');
   }
 }
 
 function handleError(err) {
-  progressBar.tick();
   console.log('creating creatives failed');
   console.log('because', err.stack);
+}
+
+function advanceProgress() {
+  progressBar.tick();
 }
 
 Bluebird.resolve(getCombinations())

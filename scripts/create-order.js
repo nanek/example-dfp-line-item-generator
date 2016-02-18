@@ -8,7 +8,7 @@
  *   $ node scripts/create-order.js --channel A --platform M --position MIDDLE --region USA --partner SONOBI
  *
  */
-/*eslint-enble */
+/*eslint-enable */
 'use strict';
 
 var Bluebird = require('bluebird');
@@ -45,20 +45,13 @@ var name = [
   region
 ].join('_').toUpperCase();
 
-var order = {
-  'name': name,
-  'unlimitedEndDateTime': true,
-  'status': 'DRAFT',
-  'currencyCode': 'USD',
-  'advertiserId': null,
-  'traffickerId': traffickerId,
-  'appliedLabels': null,
-  'isProgrammatic': false,
-  'partner': partner
-};
-
 // Print out arguments so we can know which script is executing
 console.log(process.argv.slice(2).join(' '));
+
+function formatOrder() {
+  var order = formatter.formatOrder(name, traffickerId, partner);
+  return order;
+}
 
 function prepareOrder(order) {
   return dfp.prepareOrder(order);
@@ -80,7 +73,7 @@ function handleError(err) {
 }
 
 // MAIN
-Bluebird.resolve(order)
+Bluebird.resolve(formatOrder())
   .then(prepareOrder)
   .then(createOrder)
   .then(logSuccess)
