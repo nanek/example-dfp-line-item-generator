@@ -18,7 +18,6 @@ var _ = require('lodash');
 
 var DFP_CREDS = require('../local/application-creds');
 var config = require('../local/config');
-var formatter = require('../lib/formatter');
 
 var Dfp = require('node-google-dfp-wrapper');
 
@@ -41,10 +40,10 @@ var CONCURRENCY = {
 };
 
 // use a default object to force certain properties to be in the correct order
-// startDateTime throws an error if you use full values
 var defaultAssociation = {
   lineItemId: null,
   creativeId: null,
+  // startDateTime throws an error if you use full values
   startDateTime: {
     date: { year: 2016, month: 2, day: 9 },
     hour: 11,
@@ -71,24 +70,18 @@ function getAssociations(query) {
   return dfp.getAssociations(query);
 }
 
-function includeAssociation(association){
-  var isIncluded = true;
-  if(association.sizes){
-    isIncluded = association.sizes.length !== 4;
-  }
-  return isIncluded;
+function includeAssociation(association) {
+  // filter associations however you need to
+  return true;
 }
 
-function editAssociation(association){
+function editAssociation(_association) {
+  // extend the default association so that all fields are in the correct order
   var clone = _.cloneDeep(defaultAssociation);
-  association = _.assign(clone, association);
-  association.sizes = [ { width: 300, height: 250, isAspectRatio: false },
-                        { width: 160, height: 600, isAspectRatio: false },
-                        { width: 728, height: 90, isAspectRatio: false },
-                        { width: 320, height: 50, isAspectRatio: false } ];
+  var association = _.assign(clone, _association);
+  //mutate association however you need to
   return association;
 }
-
 function updateAssociations(associations) {
   return dfp.updateAssociations(associations)
     .tap(advanceProgress);
