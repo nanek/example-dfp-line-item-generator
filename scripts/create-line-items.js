@@ -9,18 +9,18 @@
  *   $ node scripts/create-line-items.js --channel A --platform M --position MIDDLE --region USA --partner SONOBI
  *
  */
-/*eslint-enble */
+/*eslint-enable */
 'use strict';
 
 var Bluebird = require('bluebird');
-var formatter = require('../lib/formatter');
-var _ = require('lodash');
 var ProgressBar = require('progress');
 var progressBar;
+var _ = require('lodash');
+
 var argv = require('minimist')(process.argv.slice(2));
 
 var DFP_CREDS = require('../local/application-creds');
-var config = require('../local/config')
+var config = require('../local/config');
 var formatter = require('../lib/formatter');
 
 var Dfp = require('node-google-dfp-wrapper');
@@ -29,22 +29,21 @@ var credentials = {
   clientId: DFP_CREDS.installed.client_id,
   clientSecret: DFP_CREDS.installed.client_secret,
   redirectUrl: DFP_CREDS.installed.redirect_uris[0]
-}
+};
 
 var dfp = new Dfp(credentials, config, config.refreshToken);
 
+// read command line arguments
 var channel = argv.channel;
 var region = argv.region;
 var position = argv.position;
 var partner = argv.partner;
 var platform = argv.platform;
 
+// use arguments to determine any other variables
 var pricePoints = require('./price-points');
 var sizes = require('./sizes')(platform);
-var slots = require('../input/index-slot')(platform);
-
 var size = sizes[position];
-var slot = slots[position];
 
 var CONCURRENCY = {
   concurrency: 1
@@ -62,16 +61,6 @@ function getCPM(pricePoint) {
   }
 
   return cpm;
-}
-
-function indexCriteria(slot, cpm) {
-  var criteria = '';
-
-  criteria += slot;
-  criteria += '_';
-  criteria += cpm.replace('.', '').replace(/^0/, '');
-
-  return criteria;
 }
 
 function getCombinations() {
@@ -104,9 +93,7 @@ function getCombinations() {
 
 function prepareLineItem(lineItem) {
   return dfp.prepareLineItem(lineItem)
-    .tap(function() {
-      progressBar.tick();
-    });
+    .tap(advanceProgress);
 }
 
 function createLineItems(lineItems) {
@@ -115,14 +102,18 @@ function createLineItems(lineItems) {
 
 function logSuccess(results) {
   if (results) {
+    advanceProgress();
     console.log('sucessfully created lineItems');
   }
 }
 
 function handleError(err) {
-  progressBar.tick()
   console.log('creating line items failed');
   console.log('because', err.stack);
+}
+
+function advanceProgress() {
+  progressBar.tick();
 }
 
 Bluebird.resolve(getCombinations())

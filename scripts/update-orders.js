@@ -1,14 +1,13 @@
 /*eslint-disable */
 /**
  *
- * This script queries DFP for all a creatives in the order specified by the
- * script arguments. It then modifies their javascript representation and
- * submits an update to DFP.
- * ./price-points.json.
+ * This script queries dfp for all line items that match the arguments
+ * specified, modifies their javascript representation and the submits an update
+ * to DFP.
  *
  * Usage:
  *
- *   $ node sripts/update-creatives.js --channel A --platform M --position MIDDLE --region USA --partner SONOBI
+ *   $ node scripts/update-orders.js --channel A --platform M --position MIDDLE --region USA --partner SONOBI
  *
  */
 /*eslint-enable */
@@ -54,7 +53,7 @@ var CONCURRENCY = {
 console.log(process.argv.slice(2).join(' '));
 
 function prepareQuery() {
-  var allCreatives = [
+  var name = [
     channel,
     platform + size + position,
     region,
@@ -63,42 +62,39 @@ function prepareQuery() {
   ].join('_');
 
   var query = {
-    name: allCreatives
+    name: name
   };
 
   return query;
 }
 
-function getCreatives(query) {
-  return dfp.getCreatives(query);
+function getOrders(query) {
+  return dfp.getOrders(query);
 }
 
-function editCreative(creative) {
-  // This property is a copy of snippet and will be outdated
-  delete creative.expandedSnippet;
-  // mutate creative however you need to
-  return creative;
+function editOrder(order) {
+  // mutate order however you need to
+  return order;
 }
 
-function includeCreative(creative) {
-  // filter creative however you need to
+function includeOrder(order) {
+  // filter order however you need to
   return true;
 }
 
-function updateCreatives(creatives) {
-  return dfp.updateCreatives(creatives)
+function updateOrders(orders) {
+  return dfp.updateOrders(orders)
     .tap(advanceProgress);
 }
 
 function logSuccess(results) {
-  advanceProgress();
   if (results) {
-    console.log('sucessfully updated creatives');
+    console.log('sucessfully updated orders');
   }
 }
 
 function handleError(err) {
-  console.log('updating creatives failed');
+  console.log('updating orders failed');
   console.log('because', err.stack);
 }
 
@@ -122,10 +118,10 @@ function log(x){
 /*eslint-enable */
 
 Bluebird.resolve(prepareQuery())
-  .then(getCreatives)
-  .map(editCreative)
-  .filter(includeCreative)
+  .then(getOrders)
+  .map(editOrder)
+  .filter(includeOrder)
   .then(splitBatches)
-  .map(updateCreatives, CONCURRENCY)
+  .map(updateOrders, CONCURRENCY)
   .then(logSuccess)
   .catch(handleError);

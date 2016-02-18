@@ -8,15 +8,14 @@
  *   $ node scripts/create-order.js --channel A --platform M --position MIDDLE --region USA --partner SONOBI
  *
  */
-/*eslint-enble */
+/*eslint-enable */
 'use strict';
 
 var Bluebird = require('bluebird');
-var formatter = require('../lib/formatter');
 var argv = require('minimist')(process.argv.slice(2));
 
 var DFP_CREDS = require('../local/application-creds');
-var config = require('../local/config')
+var config = require('../local/config');
 var formatter = require('../lib/formatter');
 
 var Dfp = require('node-google-dfp-wrapper');
@@ -25,7 +24,7 @@ var credentials = {
   clientId: DFP_CREDS.installed.client_id,
   clientSecret: DFP_CREDS.installed.client_secret,
   redirectUrl: DFP_CREDS.installed.redirect_uris[0]
-}
+};
 
 var dfp = new Dfp(credentials, config, config.refreshToken);
 
@@ -46,20 +45,13 @@ var name = [
   region
 ].join('_').toUpperCase();
 
-var order = {
-  'name': name,
-  'unlimitedEndDateTime': true,
-  'status': 'DRAFT',
-  'currencyCode': 'USD',
-  'advertiserId': null,
-  'traffickerId': traffickerId,
-  'appliedLabels': null,
-  'isProgrammatic': false,
-  'partner': partner
-};
-
 // Print out arguments so we can know which script is executing
 console.log(process.argv.slice(2).join(' '));
+
+function formatOrder() {
+  var order = formatter.formatOrder(name, traffickerId, partner);
+  return order;
+}
 
 function prepareOrder(order) {
   return dfp.prepareOrder(order);
@@ -81,7 +73,7 @@ function handleError(err) {
 }
 
 // MAIN
-Bluebird.resolve(order)
+Bluebird.resolve(formatOrder())
   .then(prepareOrder)
   .then(createOrder)
   .then(logSuccess)
