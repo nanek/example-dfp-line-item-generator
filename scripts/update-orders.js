@@ -17,7 +17,6 @@ var argv = require('minimist')(process.argv.slice(2));
 
 var DFP_CREDS = require('../local/application-creds');
 var config = require('../local/config');
-var formatter = require('../lib/formatter');
 
 var Dfp = require('node-google-dfp-wrapper');
 
@@ -72,12 +71,13 @@ function getOrders(query) {
 }
 
 function editOrder(order) {
-  order.name = order.name.toUpperCase();
+  // mutate order however you need to
   return order;
 }
 
 function includeOrder(order) {
-  return !order.isArchived;
+  // filter order however you need to
+  return true;
 }
 
 function updateOrders(orders) {
