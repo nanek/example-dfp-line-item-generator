@@ -8,7 +8,7 @@
     "lint": "eslint .",
     "style": "npm run lint"
   },
-  "author": "Juan Caiceo <juan@spanishdict.com>",
+  "author": "Juan Caicedo <juan@spanishdict.com>",
   "license": "MIT",
   "dependencies": {
     "node-google-dfp-wrapper": "1.2.1",
