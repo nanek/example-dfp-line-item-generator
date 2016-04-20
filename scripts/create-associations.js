@@ -61,7 +61,7 @@ function prepareQuery() {
     WILDCARD
   ].join('_').toUpperCase();
 
-  return allLineItems;
+  return {"name": allLineItems};
 }
 
 function getLineItems(query) {
@@ -78,15 +78,10 @@ function combineByName(lineItems, creatives) {
   console.log('got all creatives');
 
   lineItems.forEach(function(lineItem) {
-    associations[lineItem.name] = {
-      lineItemId: lineItem.id
-    };
-  });
-
-  creatives.forEach(function(creative) {
-    if (associations[creative.name]) {
-      associations[creative.name].creativeId = creative.id;
-    }
+    associations[lineItem.name] = []
+    creatives.forEach(function(creative) {
+      associations[lineItem.name].push({ lineItemId: lineItem.id, creativeId: creative.id });
+    });
   });
 
   return associations;
@@ -96,7 +91,7 @@ function prepareAssociations(ids) {
   var associations = _.map(ids, function(associationIds, names) {
     return associationIds;
   });
-  associations = _.compact(associations);
+  associations = _.flatten(_.compact(associations));
   return associations;
 }
 
