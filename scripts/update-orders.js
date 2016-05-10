@@ -7,17 +7,18 @@
  *
  * Usage:
  *
- *   $ node scripts/update-line-items.js --channel A --platform M --position MIDDLE --region USA --partner SONOBI
+ *   $ node scripts/update-orders.js --channel A --platform M --position MIDDLE --region USA --partner SONOBI
  *
  */
+/*eslint-enable */
 'use strict';
 
 var Bluebird = require('bluebird');
+var _ = require('lodash');
 var argv = require('minimist')(process.argv.slice(2));
 
 var DFP_CREDS = require('../local/application-creds');
 var config = require('../local/config');
-var formatter = require('../lib/formatter');
 
 var Dfp = require('node-google-dfp-wrapper');
 
@@ -29,45 +30,61 @@ var credentials = {
 
 var dfp = new Dfp(credentials, config, config.refreshToken);
 
+// read command line arguments
 var channel = argv.channel;
 var region = argv.region;
 var position = argv.position;
 var partner = argv.partner;
 var platform = argv.platform;
 
+// use arguments to determine any other variables
 var sizes = require('./sizes')(platform);
-
 var size = sizes[position];
 
 var WILDCARD = '%';
 
-var all = [
-  partner,
-  WILDCARD
-].join('_');
+var ProgressBar = require('progress');
+var progressBar;
 
-var query = {
-  name: all
+var CONCURRENCY = {
+  concurrency: 1
 };
 
 console.log(process.argv.slice(2).join(' '));
 
+function prepareQuery() {
+  var name = [
+    channel,
+    platform + size + position,
+    region,
+    partner,
+    WILDCARD
+  ].join('_');
+
+  var query = {
+    name: name
+  };
+
+  return query;
+}
+
 function getOrders(query) {
-  console.log(query);
   return dfp.getOrders(query);
 }
 
 function editOrder(order) {
-  order.name = order.name.toUpperCase();
+  // mutate order however you need to
   return order;
 }
 
-function isNotArchived(order) {
-  return !order.isArchived;
+function includeOrder(order) {
+  // filter order however you need to
+  return true;
 }
 
 function updateOrders(orders) {
-  return dfp.updateOrders(orders);
+  return dfp.updateOrders(orders)
+    .tap(advanceProgress);
 }
 
 function logSuccess(results) {
@@ -81,11 +98,30 @@ function handleError(err) {
   console.log('because', err.stack);
 }
 
+function splitBatches(lineItems) {
+  var batches = _.chunk(lineItems, 400);
+  progressBar = new ProgressBar('Progress [:bar] :percent :elapseds', {
+    total: batches.length + 1
+  });
+  return batches;
+}
 
-Bluebird.resolve(query)
+function advanceProgress() {
+  progressBar.tick();
+}
+
+// this function is to help debugging
+/* eslint-disable */
+function log(x){
+  console.log(x);
+}
+/*eslint-enable */
+
+Bluebird.resolve(prepareQuery())
   .then(getOrders)
-  .filter(isNotArchived)
   .map(editOrder)
-  .then(updateOrders)
+  .filter(includeOrder)
+  .then(splitBatches)
+  .map(updateOrders, CONCURRENCY)
   .then(logSuccess)
   .catch(handleError);

@@ -9,14 +9,14 @@
  *   $ node scripts/create-line-items.js --channel A --platform M --position MIDDLE --region USA --partner SONOBI
  *
  */
-/*eslint-enble */
+/*eslint-enable */
 'use strict';
 
 var Bluebird = require('bluebird');
-var formatter = require('../lib/formatter');
-var _ = require('lodash');
 var ProgressBar = require('progress');
 var progressBar;
+var _ = require('lodash');
+
 var argv = require('minimist')(process.argv.slice(2));
 
 var DFP_CREDS = require('../local/application-creds');
@@ -33,6 +33,7 @@ var credentials = {
 
 var dfp = new Dfp(credentials, config, config.refreshToken);
 
+// read command line arguments
 var channel = argv.channel;
 var region = argv.region;
 var position = argv.position;
@@ -40,12 +41,10 @@ var partner = argv.partner;
 var platform = argv.platform;
 var offset = argv.offset;
 
+// use arguments to determine any other variables
 var pricePoints = require('./price-points');
 var sizes = require('./sizes')(platform);
-var slots = require('../input/index-slot')(platform);
-
 var size = sizes[position];
-var slot = slots[position];
 
 var orderName = [
   partner,
@@ -74,8 +73,6 @@ function getCPM(pricePoint) {
 
 function getCombinations() {
   var combinations = [];
-
-  console.log(orderName)
 
   offset = Number(offset)/100;
   _.forEach(pricePoints, function(bucket, pricePoint) {
@@ -110,9 +107,7 @@ function getCombinations() {
 
 function prepareLineItem(lineItem) {
   return dfp.prepareLineItem(lineItem)
-    .tap(function() {
-      progressBar.tick();
-    });
+    .tap(advanceProgress);
 }
 
 function createLineItems(lineItems) {
@@ -121,14 +116,20 @@ function createLineItems(lineItems) {
 
 function logSuccess(results) {
   if (results) {
+    advanceProgress();
     console.log('sucessfully created lineItems');
   }
 }
 
 function handleError(err) {
+  // So that we get an update on time elapsed after an error
   progressBar.tick();
   console.log('creating line items failed');
   console.log('because', err.stack);
+}
+
+function advanceProgress() {
+  progressBar.tick();
 }
 
 Bluebird.resolve(getCombinations())

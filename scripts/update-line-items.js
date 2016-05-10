@@ -10,6 +10,7 @@
  *   $ node scripts/update-line-items.js --channel A --platform M --position MIDDLE --region USA --partner SONOBI
  *
  */
+/*eslint-enable */
 'use strict';
 
 var Bluebird = require('bluebird');
@@ -18,7 +19,6 @@ var _ = require('lodash');
 
 var DFP_CREDS = require('../local/application-creds');
 var config = require('../local/config');
-var formatter = require('../lib/formatter');
 
 var Dfp = require('node-google-dfp-wrapper');
 
@@ -30,6 +30,7 @@ var credentials = {
 
 var dfp = new Dfp(credentials, config, config.refreshToken);
 
+// read command line arguments
 var channel = argv.channel;
 var region = argv.region;
 var partner = argv.partner;
@@ -60,6 +61,22 @@ progressBar = new ProgressBar('Progress [:bar] :percent :elapseds', {
 });
 
 console.log(process.argv.slice(2).join(' '));
+
+function prepareQuery() {
+  var allLineItems = [
+    channel,
+    platform + size + position,
+    region,
+    partner,
+    WILDCARD
+  ].join('_');
+
+  var query = {
+    name: allLineItems
+  };
+
+  return query;
+}
 
 function getLineItems(query) {
   return dfp.getLineItems(query);
@@ -104,12 +121,13 @@ function editLineItem(lineItem) {
   lineItem.targeting.technologyTargeting = [];
   return lineItem;
 }
-function isNotArchived(lineItem) {
-  return !lineItem.isArchived;
+
+function includeLineItem(lineItem) {
+  // filter line item however you need to
+  return true;
 }
 
 function updateLineItems(lineItems) {
-  advanceProgress();
   return dfp.updateLineItems(lineItems)
     .tap(advanceProgress);
 }
@@ -125,11 +143,7 @@ function handleError(err) {
   console.log('because', err.stack);
 }
 
-function log(x){
-  console.log(x[0].targeting.inventoryTargeting.targetedAdUnits);
-}
-
-function splitBatches(lineItems){
+function splitBatches(lineItems) {
   var batches = _.chunk(lineItems, 400);
   progressBar = new ProgressBar('Progress [:bar] :percent :elapseds', {
     total: batches.length + 1
@@ -137,15 +151,23 @@ function splitBatches(lineItems){
   return batches;
 }
 
-function advanceProgress(){
+function advanceProgress() {
   progressBar.tick();
-};
+}
 
-Bluebird.resolve(query)
+// this function is to help debugging
+/* eslint-disable */
+function log(x){
+  console.log(x);
+}
+/*eslint-enable */
+
+Bluebird.resolve(prepareQuery())
   .then(getLineItems)
   .map(editLineItem)
-  .filter(isNotArchived)
-  .then(updateLineItems)
+  .filter(includeLineItem)
+  .then(splitBatches)
+  .map(updateLineItems, CONCURRENCY)
   .then(logSuccess)
   .then(advanceProgress)
   .catch(handleError);

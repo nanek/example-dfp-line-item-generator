@@ -11,16 +11,17 @@
  *   $ node scripts/create-associations.js --channel A --platform M --position MIDDLE --region USA --partner SONOBI
  *
  */
-/*eslint-enble */
+/*eslint-enable */
 'use strict';
 
 var Bluebird = require('bluebird');
 var _ = require('lodash');
+var ProgressBar = require('progress');
+var progressBar;
 var argv = require('minimist')(process.argv.slice(2));
 
 var DFP_CREDS = require('../local/application-creds');
 var config = require('../local/config');
-var formatter = require('../lib/formatter');
 
 var Dfp = require('node-google-dfp-wrapper');
 
@@ -30,15 +31,9 @@ var credentials = {
   redirectUrl: DFP_CREDS.installed.redirect_uris[0]
 };
 
-var ProgressBar = require('progress');
-var progressBar;
-
-var CONCURRENCY = {
-  concurrency: 1
-};
-
 var dfp = new Dfp(credentials, config, config.refreshToken);
 
+// read command line arguments
 var channel = argv.channel;
 var region = argv.region;
 var position = argv.position;
@@ -46,6 +41,7 @@ var partner = argv.partner;
 var platform = argv.platform;
 var offset = argv.offset;
 
+// use arguments to determine any other variables
 var sizes = require('./sizes')(platform);
 var size = sizes[position];
 
@@ -57,6 +53,10 @@ var all = [
   partner,
   WILDCARD
 ].join('_').toUpperCase();
+
+var CONCURRENCY = {
+  concurrency: 1
+};
 
 var query = {
   name: all
@@ -102,21 +102,51 @@ function prepareAssociations(lineItems) {
   return associations;
 }
 
-function log(x){
-  return console.log(x.length);
+function prepareQuery() {
+  var allLineItems = [
+    channel,
+    platform + size + position,
+    region,
+    partner,
+    WILDCARD
+  ].join('_').toUpperCase();
+
+  return allLineItems;
 }
 
-function splitBatches(associations){
-  var batches = _.chunk(associations, 1600);
+function prepareAssociations(ids) {
+  var associations = _.map(ids, function(associationIds, names) {
+    return associationIds;
+  });
+  associations = _.compact(associations);
+  return associations;
+}
+
+function createAssociations(ids) {
+  return dfp.createAssociations(ids)
+    .tap(advanceProgress);
+}
+
+function logSuccess(results) {
+  advanceProgress();
+  if (results) {
+    console.log('created associations');
+  }
+}
+
+function handleError(err) {
+  console.log('creating all associations failed');
+  console.log('because', err.stack);
+}
+
+function splitBatches(lineItems) {
+  var batches = _.chunk(lineItems, 400);
   progressBar = new ProgressBar('Progress [:bar] :percent :elapseds', {
-    total: batches.length
+    total: batches.length + 1
   });
   return batches;
 }
 
-function advanceProgress(){
-  progressBar.tick();
-};
 function createAssociations(associations) {
   return dfp.createAssociations(associations)
     .tap(advanceProgress);
@@ -132,6 +162,17 @@ function handleError(err) {
   console.log('creating associations failed');
   console.log('because', err.stack);
 }
+
+function advanceProgress() {
+  progressBar.tick();
+}
+
+// this function is to help debugging
+/* eslint-disable */
+function log(x){
+  console.log(x);
+}
+/*eslint-enable */
 
 Bluebird.resolve(query)
   .then(getLineItems)
