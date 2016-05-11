@@ -23,15 +23,89 @@ module.exports = { a: {
     "discountType": "PERCENTAGE",
     "discount": "0.0",
     "contractedUnitsBought": "0",
-    "creativePlaceholders": {
-        "size": {
-            "width": 320,
-            "height": 50,
-            "isAspectRatio": "false"
+    "creativePlaceholders": [
+        {
+            "size": {
+                "width": 300,
+                "height": 600,
+                "isAspectRatio": "false"
+            },
+            "expectedCreativeCount": "1",
+            "creativeSizeType": "PIXEL"
         },
-        "expectedCreativeCount": "1",
-        "creativeSizeType": "PIXEL"
-    },
+        {
+            "size": {
+                "width": 300,
+                "height": 50,
+                "isAspectRatio": "false"
+            },
+            "expectedCreativeCount": "1",
+            "creativeSizeType": "PIXEL"
+        },
+        {
+            "size": {
+                "width": 320,
+                "height": 50,
+                "isAspectRatio": "false"
+            },
+            "expectedCreativeCount": "1",
+            "creativeSizeType": "PIXEL"
+        },
+        {
+            "size": {
+                "width": 300,
+                "height": 250,
+                "isAspectRatio": "false"
+            },
+            "expectedCreativeCount": "1",
+            "creativeSizeType": "PIXEL"
+        },
+        {
+            "size": {
+                "width": 728,
+                "height": 90,
+                "isAspectRatio": "false"
+            },
+            "expectedCreativeCount": "1",
+            "creativeSizeType": "PIXEL"
+        },
+        {
+            "size": {
+                "width": 970,
+                "height": 250,
+                "isAspectRatio": "false"
+            },
+            "expectedCreativeCount": "1",
+            "creativeSizeType": "PIXEL"
+        },
+        {
+            "size": {
+                "width": 160,
+                "height": 600,
+                "isAspectRatio": "false"
+            },
+            "expectedCreativeCount": "1",
+            "creativeSizeType": "PIXEL"
+        },
+        {
+            "size": {
+                "width": 300,
+                "height": 100,
+                "isAspectRatio": "false"
+            },
+            "expectedCreativeCount": "1",
+            "creativeSizeType": "PIXEL"
+        },
+        {
+            "size": {
+                "width": 970,
+                "height": 90,
+                "isAspectRatio": "false"
+            },
+            "expectedCreativeCount": "1",
+            "creativeSizeType": "PIXEL"
+        }
+    ],
     "environmentType": "BROWSER",
     "companionDeliveryOption": "UNKNOWN",
     "creativePersistenceType": "NOT_PERSISTENT",
