@@ -61,4 +61,14 @@ describe('formatter', function(){
     });
 
   });
+
+  describe('generatePricePoints', function(){
+    it('should generate price points', function(){
+      var prices = formatter.generatePricePoints();
+
+      expect(prices[0]).to.eql('0.00');
+      expect(prices[10000]).to.eql('100.00');
+      expect(prices).to.have.length(10001);
+    });
+  });
 });
