@@ -1,6 +1,6 @@
 module.exports = { a: {
     "orderId": null,
-    "name": "A_USA_SOVRN_0100",
+    "name": "PREBID_00001",
     "externalId": {},
     "startDateTime": null,
     "startDateTimeType": "USE_START_DATE_TIME",
@@ -13,7 +13,7 @@ module.exports = { a: {
     "priority": "12",
     "costPerUnit": {
         "currencyCode": "USD",
-        "microAmount": "100000000"
+        "microAmount": "1000000"
     },
     "valueCostPerUnit": {
         "currencyCode": "USD",
@@ -213,7 +213,7 @@ module.exports = { a: {
         }
     },
     "customCriteriaKVPairs": {
-        "hb_pb": "100"
+        "hb_pb": "1"
     },
     "adUnitName": "BSM_320_50_SIDEBAR",
     "orderName": "PREBID-0-400",
