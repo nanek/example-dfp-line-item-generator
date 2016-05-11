@@ -79,13 +79,10 @@ function getCombinations() {
     var price = Number(pricePoint) + offset;
     var cpm = getCPM(price).toFixed(2);
     var lineItem = formatter.formatLineItem({
-      offset: offset,
       cpm: cpm,
-      channel: channel,
       position: position,
       platform: platform,
       orderName: orderName,
-      region: region,
       partner: partner,
       width: size.split('x')[0],
       height: size.split('x')[1],
