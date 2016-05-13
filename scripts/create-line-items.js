@@ -6,7 +6,7 @@
  *
  * Usage:
  *
- *   $ node scripts/create-line-items.js --channel A --platform M --position MIDDLE --region USA --partner SONOBI
+ *   $ node scripts/create-line-items.js --platform M --position MIDDLE --partner SONOBI
  *
  */
 /*eslint-enable */
@@ -15,7 +15,6 @@
 var Bluebird = require('bluebird');
 var ProgressBar = require('progress');
 var progressBar;
-var _ = require('lodash');
 
 var argv = require('minimist')(process.argv.slice(2));
 
@@ -34,22 +33,18 @@ var credentials = {
 var dfp = new Dfp(credentials, config, config.refreshToken);
 
 // read command line arguments
-var channel = argv.channel;
-var region = argv.region;
 var position = argv.position;
 var partner = argv.partner;
 var platform = argv.platform;
 var offset = argv.offset;
 
 // use arguments to determine any other variables
-var pricePoints = require('./price-points');
+var pricePoints = formatter.generatePricePoints(1, 400);
 var sizes = require('./sizes')(platform);
 var size = sizes[position];
 
 var orderName = [
   partner,
-  channel,
-  region,
   offset + '-CENT'
 ].join('_');
 
@@ -75,7 +70,7 @@ function getCombinations() {
   var combinations = [];
 
   offset = Number(offset)/100;
-  _.forEach(pricePoints, function(bucket, pricePoint) {
+  pricePoints.forEach(function(pricePoint) {
     var price = Number(pricePoint) + offset;
     var cpm = getCPM(price).toFixed(2);
     var lineItem = formatter.formatLineItem({
