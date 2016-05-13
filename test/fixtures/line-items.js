@@ -13,7 +13,7 @@ module.exports = { a: {
     "priority": "12",
     "costPerUnit": {
         "currencyCode": "USD",
-        "microAmount": "1000000"
+        "microAmount": "10000"
     },
     "valueCostPerUnit": {
         "currencyCode": "USD",
@@ -147,7 +147,7 @@ module.exports = { a: {
         }
     },
     "customCriteriaKVPairs": {
-        "hb_pb": "1"
+        "hb_pb": "0.01"
     },
     "adUnitName": "BSM_320_50_SIDEBAR",
     "orderName": "PREBID-0-400",
