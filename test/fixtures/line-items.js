@@ -190,7 +190,6 @@ module.exports = { a: {
     "customCriteriaKVPairs": {
         "hb_pb": "0.01"
     },
-    "adUnitName": "BSM_320_50_SIDEBAR",
     "orderName": "PREBID-0-400",
     "date": "2-04-2016, 16:10:53"
 }
