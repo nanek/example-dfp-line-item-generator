@@ -75,12 +75,7 @@ function getCombinations() {
     var cpm = getCPM(price).toFixed(2);
     var lineItem = formatter.formatLineItem({
       cpm: cpm,
-      position: position,
-      platform: platform,
       orderName: orderName,
-      partner: partner,
-      width: size.split('x')[0],
-      height: size.split('x')[1],
       customCriteriaKVPairs: {
         "hb_pb": (cpm.toString())
       },
