@@ -64,11 +64,11 @@ describe('formatter', function(){
 
   describe('generatePricePoints', function(){
     it('should generate price points', function(){
-      var prices = formatter.generatePricePoints();
+      var prices = formatter.generatePricePoints(1, 400);
 
-      expect(prices[0]).to.eql('0.00');
-      expect(prices[10000]).to.eql('100.00');
-      expect(prices).to.have.length(10001);
+      expect(prices[0]).to.eql('0.01');
+      expect(prices[399]).to.eql('4.00');
+      expect(prices).to.have.length(400);
     });
   });
 });

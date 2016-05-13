@@ -39,7 +39,7 @@ var platform = argv.platform;
 var offset = argv.offset;
 
 // use arguments to determine any other variables
-var pricePoints = formatter.generatePricePoints();
+var pricePoints = formatter.generatePricePoints(1, 400);
 var sizes = require('./sizes')(platform);
 var size = sizes[position];
 
