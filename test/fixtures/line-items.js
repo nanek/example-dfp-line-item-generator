@@ -6,14 +6,14 @@ module.exports = { a: {
     "startDateTimeType": "USE_START_DATE_TIME",
     "autoExtensionDays": "0",
     "unlimitedEndDateTime": "true",
-    "creativeRotationType": "OPTIMIZED",
+    "creativeRotationType": "EVEN",
     "deliveryRateType": "EVENLY",
     "roadblockingType": "ONE_OR_MORE",
     "lineItemType": "PRICE_PRIORITY",
     "priority": "12",
     "costPerUnit": {
         "currencyCode": "USD",
-        "microAmount": "1000000"
+        "microAmount": "10000"
     },
     "valueCostPerUnit": {
         "currencyCode": "USD",
@@ -128,7 +128,7 @@ module.exports = { a: {
     "reservationStatus": "UNRESERVED",
     "isArchived": "false",
     "webPropertyCode": {},
-    "disableSameAdvertiserCompetitiveExclusion": "false",
+    "disableSameAdvertiserCompetitiveExclusion": "true",
     "lastModifiedByApp": "Goog_DFPUI",
     "lastModifiedDateTime": {},
     "creationDateTime": {},
@@ -143,11 +143,52 @@ module.exports = { a: {
     },
     "targeting": {
         "inventoryTargeting": {
-            "targetedAdUnits": []
+            "targetedAdUnits": [
+                    {
+                        "adUnitId": "118650016",
+                        "includeDescendants": true
+                    },
+                    {
+                        "adUnitId": "118650256",
+                        "includeDescendants": true
+                    },
+                    {
+                        "adUnitId": "118649776",
+                        "includeDescendants": true
+                    },
+                    {
+                        "adUnitId": "118649536",
+                        "includeDescendants": true
+                    },
+                    {
+                        "adUnitId": "124991056",
+                        "includeDescendants": true
+                    },
+                    {
+                        "adUnitId": "31562776",
+                        "includeDescendants": true
+                    },
+                    {
+                        "adUnitId": "119700376",
+                        "includeDescendants": true
+                    },
+                    {
+                        "adUnitId": "118649896",
+                        "includeDescendants": true
+                    },
+                    {
+                        "adUnitId": "118649656",
+                        "includeDescendants": true
+                    },
+                    {
+                        "adUnitId": "4628056",
+                        "includeDescendants": true
+                    }
+                ]
         }
     },
     "customCriteriaKVPairs": {
-        "hb_pb": "1"
+        "hb_pb": "0.01"
     },
     "adUnitName": "BSM_320_50_SIDEBAR",
     "orderName": "PREBID-0-400",
