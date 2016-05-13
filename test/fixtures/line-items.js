@@ -143,7 +143,48 @@ module.exports = { a: {
     },
     "targeting": {
         "inventoryTargeting": {
-            "targetedAdUnits": []
+            "targetedAdUnits": [
+                    {
+                        "adUnitId": "118650016",
+                        "includeDescendants": true
+                    },
+                    {
+                        "adUnitId": "118650256",
+                        "includeDescendants": true
+                    },
+                    {
+                        "adUnitId": "118649776",
+                        "includeDescendants": true
+                    },
+                    {
+                        "adUnitId": "118649536",
+                        "includeDescendants": true
+                    },
+                    {
+                        "adUnitId": "124991056",
+                        "includeDescendants": true
+                    },
+                    {
+                        "adUnitId": "31562776",
+                        "includeDescendants": true
+                    },
+                    {
+                        "adUnitId": "119700376",
+                        "includeDescendants": true
+                    },
+                    {
+                        "adUnitId": "118649896",
+                        "includeDescendants": true
+                    },
+                    {
+                        "adUnitId": "118649656",
+                        "includeDescendants": true
+                    },
+                    {
+                        "adUnitId": "4628056",
+                        "includeDescendants": true
+                    }
+                ]
         }
     },
     "customCriteriaKVPairs": {
