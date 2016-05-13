@@ -185,6 +185,18 @@ module.exports = { a: {
                         "includeDescendants": true
                     }
                 ]
+        },
+        "customTargeting": {
+          "children": [
+            {
+              "attributes": {
+                "xsi:type": "CustomCriteriaSet"
+              },
+              "children": [],
+              "logicalOperator": "AND"
+            }
+          ],
+          "logicalOperator": "OR"
         }
     },
     "customCriteriaKVPairs": {

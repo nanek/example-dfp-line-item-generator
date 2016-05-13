@@ -63,7 +63,7 @@ function createOrder(order) {
 
 function logSuccess(results) {
   if (results) {
-    console.log('sucessfully created order');
+    console.log('successfully created order');
   }
 }
 

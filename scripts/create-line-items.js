@@ -1,12 +1,11 @@
 /*eslint-disable */
 /**
  *
- * This script creates a new line item for each price point specified in
- * ./price-points.json.
+ * Creates a line item for each cent between a starting CPM and ending CPM.
  *
  * Usage:
  *
- *   $ node scripts/create-line-items.js --platform M --position MIDDLE --partner SONOBI
+ *   $ node scripts/create-line-items.js --order ORDER_NAME --start 1 --end 1
  *
  */
 /*eslint-enable */
@@ -32,21 +31,11 @@ var credentials = {
 
 var dfp = new Dfp(credentials, config, config.refreshToken);
 
-// read command line arguments
-var position = argv.position;
-var partner = argv.partner;
-var platform = argv.platform;
-var offset = argv.offset;
+var orderName = argv.order;
+var startInCents = argv.start;
+var endInCents = argv.end;
 
-// use arguments to determine any other variables
-var pricePoints = formatter.generatePricePoints(1, 400);
-var sizes = require('./sizes')(platform);
-var size = sizes[position];
-
-var orderName = [
-  partner,
-  offset + '-CENT'
-].join('_');
+var pricePoints = formatter.generatePricePoints(startInCents, endInCents);
 
 var CONCURRENCY = {
   concurrency: 1
@@ -54,25 +43,10 @@ var CONCURRENCY = {
 
 console.log(process.argv.slice(2).join(' '));
 
-function getCPM(pricePoint) {
-  var cpm = pricePoint;
-
-  //add trailing 0 if needed
-  var index = pricePoint.length - 2;
-  if (cpm[index] === '.') {
-    cpm += '0';
-  }
-
-  return cpm;
-}
-
 function getCombinations() {
   var combinations = [];
 
-  offset = Number(offset)/100;
-  pricePoints.forEach(function(pricePoint) {
-    var price = Number(pricePoint) + offset;
-    var cpm = getCPM(price).toFixed(2);
+  pricePoints.forEach(function(cpm) {
     var lineItem = formatter.formatLineItem({
       cpm: cpm,
       orderName: orderName,
@@ -104,7 +78,7 @@ function createLineItems(lineItems) {
 function logSuccess(results) {
   if (results) {
     advanceProgress();
-    console.log('sucessfully created lineItems');
+    console.log('successfully created lineItems');
   }
 }
 
