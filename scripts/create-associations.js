@@ -63,6 +63,54 @@ var creatives = [
   '115407550456'
 ];
 
+var sizes = [
+  {
+      "width": 300,
+      "height": 250,
+      "isAspectRatio": false
+  },
+  {
+      "width": 728,
+      "height": 90,
+      "isAspectRatio": false
+  },
+  {
+      "width": 970,
+      "height": 90,
+      "isAspectRatio": false
+  },
+  {
+      "width": 160,
+      "height": 600,
+      "isAspectRatio": false
+  },
+  {
+      "width": 300,
+      "height": 50,
+      "isAspectRatio": false
+  },
+  {
+      "width": 300,
+      "height": 600,
+      "isAspectRatio": false
+  },
+  {
+      "width": 970,
+      "height": 250,
+      "isAspectRatio": false
+  },
+  {
+      "width": 300,
+      "height": 100,
+      "isAspectRatio": false
+  },
+  {
+      "width": 320,
+      "height": 50,
+      "isAspectRatio": false
+  }
+];
+
 console.log(process.argv.slice(2).join(' '));
 
 function getLineItems(query){
@@ -74,7 +122,8 @@ function prepareAssociations(lineItems) {
     return creatives.map(function(creativeId){
       return {
         lineItemId: lineItem.id,
-        creativeId: creativeId
+        creativeId: creativeId,
+        sizes: sizes
       };
     });
   });
