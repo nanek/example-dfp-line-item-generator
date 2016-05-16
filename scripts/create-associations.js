@@ -8,7 +8,7 @@
  *
  * Usage:
  *
- *   $ node scripts/create-associations.js --channel A --platform M --position MIDDLE --region USA --partner SONOBI
+ *   $ node scripts/create-associations.js --partner PREBID
  *
  */
 /*eslint-enable */
@@ -34,22 +34,12 @@ var credentials = {
 var dfp = new Dfp(credentials, config, config.refreshToken);
 
 // read command line arguments
-var channel = argv.channel;
-var region = argv.region;
-var position = argv.position;
 var partner = argv.partner;
-var platform = argv.platform;
-var offset = argv.offset;
-
-// use arguments to determine any other variables
-var sizes = require('./sizes')(platform);
-var size = sizes[position];
 
 var WILDCARD = '%';
 
 var all = [
-  channel,
-  region,
+  "TEST",
   partner,
   WILDCARD
 ].join('_').toUpperCase();
@@ -63,30 +53,19 @@ var query = {
 };
 
 var creatives = [
-  '92877739936',
+  '95044558336',
+  '95044464736',
+  '95044595056',
   '95043909256',
   '95043981976',
-  '95044399336',
-  '95044464736',
-  '95044558336',
-  '95044595056'
-];
-
-var sizes =  [
-  { width: 300, height: 250, isAspectRatio: false },
-  { width: 728, height: 90, isAspectRatio: false },
-  { width: 160, height: 600, isAspectRatio: false },
-  { width: 320, height: 50, isAspectRatio: false }
+  '92877739936',
+  '95044399336'
 ];
 
 console.log(process.argv.slice(2).join(' '));
 
 function getLineItems(query){
   return dfp.getLineItems(query);
-}
-
-function notFiveCent(lineItem){
-  return !lineItem.name.match(/[05]$/);
 }
 
 function prepareAssociations(lineItems) {
@@ -100,18 +79,6 @@ function prepareAssociations(lineItems) {
   });
 
   return associations;
-}
-
-function prepareQuery() {
-  var allLineItems = [
-    channel,
-    platform + size + position,
-    region,
-    partner,
-    WILDCARD
-  ].join('_').toUpperCase();
-
-  return allLineItems;
 }
 
 function prepareAssociations(ids) {
@@ -176,7 +143,6 @@ function log(x){
 
 Bluebird.resolve(query)
   .then(getLineItems)
-  .filter(notFiveCent)
   .then(prepareAssociations)
   .then(_.flatten)
   .then(splitBatches)
