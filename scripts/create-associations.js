@@ -39,7 +39,6 @@ var partner = argv.partner;
 var WILDCARD = '%';
 
 var all = [
-  "TEST",
   partner,
   WILDCARD
 ].join('_').toUpperCase();
