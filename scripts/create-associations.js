@@ -81,26 +81,6 @@ function prepareAssociations(lineItems) {
   return associations;
 }
 
-function prepareAssociations(ids) {
-  var associations = _.map(ids, function(associationIds, names) {
-    return associationIds;
-  });
-  associations = _.compact(associations);
-  return associations;
-}
-
-function createAssociations(ids) {
-  return dfp.createAssociations(ids)
-    .tap(advanceProgress);
-}
-
-function logSuccess(results) {
-  advanceProgress();
-  if (results) {
-    console.log('created associations');
-  }
-}
-
 function handleError(err) {
   console.log('creating all associations failed');
   console.log('because', err.stack);
@@ -123,11 +103,6 @@ function logSuccess(results) {
   if (results) {
     console.log('sucessfully created associations');
   }
-}
-
-function handleError(err) {
-  console.log('creating associations failed');
-  console.log('because', err.stack);
 }
 
 function advanceProgress() {
