@@ -1,12 +1,11 @@
 /*eslint-disable */
 /**
  *
- * This script creates a new line item for each price point specified in
- * ./price-points.json.
+ * Creates a line item for each cent between a starting CPM and ending CPM.
  *
  * Usage:
  *
- *   $ node scripts/create-line-items.js --channel A --platform M --position MIDDLE --region USA --partner SONOBI
+ *   $ node scripts/create-line-items.js --order ORDER_NAME --start 1 --end 1
  *
  */
 /*eslint-enable */
@@ -15,7 +14,6 @@
 var Bluebird = require('bluebird');
 var ProgressBar = require('progress');
 var progressBar;
-var _ = require('lodash');
 
 var argv = require('minimist')(process.argv.slice(2));
 
@@ -33,17 +31,11 @@ var credentials = {
 
 var dfp = new Dfp(credentials, config, config.refreshToken);
 
-// read command line arguments
-var channel = argv.channel;
-var region = argv.region;
-var position = argv.position;
-var partner = argv.partner;
-var platform = argv.platform;
+var orderName = argv.order;
+var startInCents = argv.start;
+var endInCents = argv.end;
 
-// use arguments to determine any other variables
-var pricePoints = require('./price-points');
-var sizes = require('./sizes')(platform);
-var size = sizes[position];
+var pricePoints = formatter.generatePricePoints(startInCents, endInCents);
 
 var CONCURRENCY = {
   concurrency: 1
@@ -51,34 +43,17 @@ var CONCURRENCY = {
 
 console.log(process.argv.slice(2).join(' '));
 
-function getCPM(pricePoint) {
-  var cpm = pricePoint;
-
-  //add trailing 0 if needed
-  var index = pricePoint.length - 2;
-  if (cpm[index] === '.') {
-    cpm += '0';
-  }
-
-  return cpm;
-}
-
 function getCombinations() {
   var combinations = [];
 
-  _.forEach(pricePoints, function(bucket, pricePoint) {
-    var cpm = getCPM(pricePoint);
+  pricePoints.forEach(function(cpm) {
     var lineItem = formatter.formatLineItem({
       cpm: cpm,
-      channel: channel,
-      position: position,
-      platform: platform,
-      region: region,
-      partner: partner,
-      width: size.split('x')[0],
-      height: size.split('x')[1],
-      customCriteriaKVPairs: {},
-      date: "1-22-2016, 18:10:53"
+      orderName: orderName,
+      customCriteriaKVPairs: {
+        "hb_pb": (cpm.toString())
+      },
+      date: "2-04-2016, 16:10:53"
     });
 
     combinations.push(lineItem);
@@ -103,11 +78,13 @@ function createLineItems(lineItems) {
 function logSuccess(results) {
   if (results) {
     advanceProgress();
-    console.log('sucessfully created lineItems');
+    console.log('successfully created lineItems');
   }
 }
 
 function handleError(err) {
+  // So that we get an update on time elapsed after an error
+  progressBar.tick();
   console.log('creating line items failed');
   console.log('because', err.stack);
 }

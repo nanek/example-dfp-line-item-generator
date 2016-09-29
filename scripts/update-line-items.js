@@ -33,15 +33,17 @@ var dfp = new Dfp(credentials, config, config.refreshToken);
 // read command line arguments
 var channel = argv.channel;
 var region = argv.region;
-var position = argv.position;
 var partner = argv.partner;
-var platform = argv.platform;
-
-// use arguments to determine any other variables
-var sizes = require('./sizes')(platform);
-var size = sizes[position];
+var offset = argv.offset;
 
 var WILDCARD = '%';
+
+var all = [
+  channel,
+  region,
+  partner,
+  WILDCARD + offset
+].join('_');
 
 var ProgressBar = require('progress');
 var progressBar;
@@ -49,6 +51,14 @@ var progressBar;
 var CONCURRENCY = {
   concurrency: 1
 };
+
+var query = {
+  name: all
+};
+
+progressBar = new ProgressBar('Progress [:bar] :percent :elapseds', {
+  total: 2
+});
 
 console.log(process.argv.slice(2).join(' '));
 
@@ -72,10 +82,43 @@ function getLineItems(query) {
   return dfp.getLineItems(query);
 }
 
+function onlyAbove10Dollars(lineItem) {
+  return lineItem.name.match(/_[12]...$/);
+}
+
 function editLineItem(lineItem) {
-  // Some fields need to receive default values
+  lineItem.targeting.inventoryTargeting.targetedAdUnits = [{
+    adUnitId: '118649536',
+    includeDescendants: true
+  }, {
+    adUnitId: '118650016',
+    includeDescendants: true
+  }, {
+    adUnitId: '118649776',
+    includeDescendants: true
+  }, {
+    adUnitId: '118650256',
+    includeDescendants: true
+  }, {
+    adUnitId: '124991056',
+    includeDescendants: true
+  }, {
+    adUnitId: '31562776',
+    includeDescendants: true
+  }, {
+    adUnitId: '118649896',
+    includeDescendants: true
+  }, {
+    adUnitId: '119700376',
+    includeDescendants: true
+  }, {
+    adUnitId: '118649656',
+    includeDescendants: true
+  }, {
+    adUnitId: '4628056',
+    includeDescendants: true
+  }];
   lineItem.targeting.technologyTargeting = [];
-  // mutate line item however you need to
   return lineItem;
 }
 
@@ -83,6 +126,7 @@ function includeLineItem(lineItem) {
   // filter line item however you need to
   return true;
 }
+
 function updateLineItems(lineItems) {
   return dfp.updateLineItems(lineItems)
     .tap(advanceProgress);
@@ -125,4 +169,5 @@ Bluebird.resolve(prepareQuery())
   .then(splitBatches)
   .map(updateLineItems, CONCURRENCY)
   .then(logSuccess)
+  .then(advanceProgress)
   .catch(handleError);

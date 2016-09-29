@@ -5,7 +5,7 @@
  *
  * Usage:
  *
- *   $ node scripts/create-order.js --channel A --platform M --position MIDDLE --region USA --partner SONOBI
+ *   $ node scripts/create-order.js --partner PREBID --offset 1
  *
  */
 /*eslint-enable */
@@ -28,21 +28,17 @@ var credentials = {
 
 var dfp = new Dfp(credentials, config, config.refreshToken);
 
-var channel = argv.channel;
-var region = argv.region;
-var position = argv.position;
-var partner = argv.partner.replace('-Test', '');
-var platform = argv.platform;
+var partner = argv.partner;
+var offset = argv.offset;
 
 // This is the id of a DFP user that will be listed as trafficker.
 var traffickerId = '142204336';
 
+// Examples: PREBID_O_00001, PREBID_O_00401
 var name = [
   partner,
-  channel,
-  platform,
-  position,
-  region
+  'O',
+  formatter.pad(offset, 5)
 ].join('_').toUpperCase();
 
 // Print out arguments so we can know which script is executing
@@ -63,7 +59,7 @@ function createOrder(order) {
 
 function logSuccess(results) {
   if (results) {
-    console.log('sucessfully created order');
+    console.log('successfully created order');
   }
 }
 

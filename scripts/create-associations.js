@@ -8,7 +8,7 @@
  *
  * Usage:
  *
- *   $ node scripts/create-associations.js --channel A --platform M --position MIDDLE --region USA --partner SONOBI
+ *   $ node scripts/create-associations.js --partner PREBID
  *
  */
 /*eslint-enable */
@@ -34,82 +34,100 @@ var credentials = {
 var dfp = new Dfp(credentials, config, config.refreshToken);
 
 // read command line arguments
-var channel = argv.channel;
-var region = argv.region;
-var position = argv.position;
 var partner = argv.partner;
-var platform = argv.platform;
-
-// use arguments to determine any other variables
-var sizes = require('./sizes')(platform);
-var size = sizes[position];
 
 var WILDCARD = '%';
+
+var all = [
+  partner,
+  WILDCARD
+].join('_').toUpperCase();
 
 var CONCURRENCY = {
   concurrency: 1
 };
 
+var query = {
+  name: all
+};
+
+var creatives = [
+  '115407550216',
+  '115406983456',
+  '115407550816',
+  '115407550576',
+  '115407550336',
+  '115407550936',
+  '115407550696',
+  '115407550456'
+];
+
+var sizes = [
+  {
+      "width": 300,
+      "height": 250,
+      "isAspectRatio": false
+  },
+  {
+      "width": 728,
+      "height": 90,
+      "isAspectRatio": false
+  },
+  {
+      "width": 970,
+      "height": 90,
+      "isAspectRatio": false
+  },
+  {
+      "width": 160,
+      "height": 600,
+      "isAspectRatio": false
+  },
+  {
+      "width": 300,
+      "height": 50,
+      "isAspectRatio": false
+  },
+  {
+      "width": 300,
+      "height": 600,
+      "isAspectRatio": false
+  },
+  {
+      "width": 970,
+      "height": 250,
+      "isAspectRatio": false
+  },
+  {
+      "width": 300,
+      "height": 100,
+      "isAspectRatio": false
+  },
+  {
+      "width": 320,
+      "height": 50,
+      "isAspectRatio": false
+  }
+];
+
 console.log(process.argv.slice(2).join(' '));
 
-function prepareQuery() {
-  var allLineItems = [
-    channel,
-    platform + size + position,
-    region,
-    partner,
-    WILDCARD
-  ].join('_').toUpperCase();
-
-  return allLineItems;
+function getLineItems(query){
+  return dfp.getLineItems(query);
 }
 
-function getLineItems(query) {
-  return [dfp.getLineItems(query), query];
-}
-
-function getCreatives(lineItems, query) {
-  console.log('got all line items');
-  return [lineItems, dfp.getCreatives(query)];
-}
-
-function combineByName(lineItems, creatives) {
-  var associations = {};
-  console.log('got all creatives');
-
-  lineItems.forEach(function(lineItem) {
-    associations[lineItem.name] = {
-      lineItemId: lineItem.id
-    };
-  });
-
-  creatives.forEach(function(creative) {
-    if (associations[creative.name]) {
-      associations[creative.name].creativeId = creative.id;
-    }
+function prepareAssociations(lineItems) {
+  var associations  = lineItems.map(function(lineItem) {
+    return creatives.map(function(creativeId){
+      return {
+        lineItemId: lineItem.id,
+        creativeId: creativeId,
+        sizes: sizes
+      };
+    });
   });
 
   return associations;
-}
-
-function prepareAssociations(ids) {
-  var associations = _.map(ids, function(associationIds, names) {
-    return associationIds;
-  });
-  associations = _.compact(associations);
-  return associations;
-}
-
-function createAssociations(ids) {
-  return dfp.createAssociations(ids)
-    .tap(advanceProgress);
-}
-
-function logSuccess(results) {
-  advanceProgress();
-  if (results) {
-    console.log('created associations');
-  }
 }
 
 function handleError(err) {
@@ -125,6 +143,17 @@ function splitBatches(lineItems) {
   return batches;
 }
 
+function createAssociations(associations) {
+  return dfp.createAssociations(associations)
+    .tap(advanceProgress);
+}
+
+function logSuccess(results) {
+  if (results) {
+    console.log('sucessfully created associations');
+  }
+}
+
 function advanceProgress() {
   progressBar.tick();
 }
@@ -136,11 +165,10 @@ function log(x){
 }
 /*eslint-enable */
 
-Bluebird.resolve(prepareQuery())
+Bluebird.resolve(query)
   .then(getLineItems)
-  .spread(getCreatives)
-  .spread(combineByName)
   .then(prepareAssociations)
+  .then(_.flatten)
   .then(splitBatches)
   .map(createAssociations, CONCURRENCY)
   .then(logSuccess)
