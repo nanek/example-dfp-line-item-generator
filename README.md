@@ -5,6 +5,8 @@ This project was originally developed for internal use at Curiosity Media. Thoug
 
 Note that some conventions specific to our team at Curiosity Media. They're pointed out as best as possible.
 
+Current scripts are oriented towards a Prebid setup. Previous examples exist in the v0.2 branch.
+
 ### Issues and questions
 
 If you find any bugs, can suggest any improvements or find any part of the repository unclear, please report it in [the issues](https://github.com/spanishdict/example-line-item-generator/issues).
@@ -42,29 +44,6 @@ For each of these steps, write a script that:
 
 ### Curiosity Media's A/B testing conventions
 To understand this code it can  be helpful to understand the conventions of our A/B testing framework. For more information on the motivation for this framework, refer to [this article on PubNation's blog](thttp://blog.pubnation.com/ab-testing-ads/).
-
-Our DFP set up for each ad unit:
-
-  - Channel is either A or B
-  - Region is the geographic zone that will be targeted, either USA or INT
-  - Platform is either Desktop or Mobile (D or M)
-  - Position is the name of the ad unit on the page
-  _ Price is the CPM * 100 and with leading zeroes and no decimals ($1.50 = "0100")
-
-Naming conventions:
-
-Item       | Name
------------|------------------------------------------------------
-Order      | \<partner\>\_\<channel\>\_\<platform\>\_\<position\>\_\<region\>
-Line Items | \<partner\>\_\<channel\>\_\<platform\>\_\<position\>\_\<region\>\_\<price\>
-Creatives  | \<partner\>\_\<channel\>\_\<platform\>\_\<position\>\_\<region\>\_\<price\>
-
-Other conventions:
-
-  - One order per channel, region and position.
-  - One line item per price point.
-  - Number of price points is specified by partner.
-  - One creative per line item.
 
 ### Scripting large batches
 
