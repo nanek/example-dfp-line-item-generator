@@ -1,3 +1,4 @@
+_Note: This codebase is no longer being actively worked on. The last time it was run at Curiosity Media was Sep 30, 2016. We encourage you to build off this example for your needs, but we do not plan on responding to issues in depth or adding new feature. But we wish you luck!_ 😀
 # Example DFP Line Item Generator
 
 ## State of this project
